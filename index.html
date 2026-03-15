@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Portfolio</title>
+
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <header>
+    <div class="photo-circle">
+      <!--
+        TO ADD YOUR PHOTO:
+        1. Place your image file in the /assets/ folder (e.g. assets/photo.jpg)
+        2. Replace the src below and remove the style="display:none"
+      -->
+      <img src="assets/photo.jpg" alt="My photo" style="display:none" />
+      <div class="photo-placeholder">Photo</div>
+    </div>
+    <div class="header-text">
+      <div class="header-name">My Name</div>
+      <div class="header-tagline">Full-Stack Developer · Waterloo, CA</div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN LAYOUT ─── -->
+  <div class="layout">
+
+    <!-- LEFT NAV -->
+    <nav class="nav-col">
+      <button class="nav-btn active"  data-section="about">About Me</button>
+      <button class="nav-btn"         data-section="work">Selected Work</button>
+      <div class="nav-spacer"></div>
+      <button class="nav-btn"         data-section="learnings">Learnings</button>
+      <button class="nav-btn"         data-section="topic1">Topic 1</button>
+      <button class="nav-btn"         data-section="topic2">Topic 2</button>
+    </nav>
+
+    <!-- CONTENT PANEL -->
+    <main class="content-col">
+      <div id="md-content" class="md-body">
+        <div class="loader">Loading…</div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="footer-eyebrow">Get In Touch</div>
+    <div class="footer-title">Let's create something <em>extraordinary</em></div>
+    <div class="footer-sub">Open to collaborations, freelance work, and interesting conversations.</div>
+    <div class="footer-links">
+      <a href="mailto:you@email.com" class="footer-btn">Send an Email</a>
+      <a href="https://github.com/yourusername" target="_blank" class="footer-btn outline">GitHub</a>
+      <a href="https://linkedin.com/in/yourname"  target="_blank" class="footer-btn outline">LinkedIn</a>
+    </div>
+    <div class="footer-copy">© 2025 My Name · Hosted on GitHub Pages</div>
+  </footer>
+
+  <script>
+    // ─── CONFIG ───────────────────────────────────────────────
+    // Map each nav button's data-section to its markdown file.
+    // Add new sections here as you create subfolders.
+    const SECTIONS = {
+      about:     'about/index.md',
+      work:      'work/index.md',
+      learnings: 'learnings/index.md',
+      topic1:    'topic1/index.md',
+      topic2:    'topic2/index.md',
+    };
+
+    // ─── MARKDOWN LOADER ──────────────────────────────────────
+    const contentEl = document.getElementById('md-content');
+    let currentSection = null;
+
+    async function loadSection(section) {
+      if (section === currentSection) return;
+      currentSection = section;
+
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.section === section);
+      });
+
+      // Show loader
+      contentEl.innerHTML = '<div class="loader">Loading…</div>';
+
+      const mdPath = SECTIONS[section];
+      if (!mdPath) {
+        contentEl.innerHTML = '<p class="error">Section not found.</p>';
+        return;
+      }
+
+      try {
+        const res = await fetch(mdPath);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        contentEl.innerHTML = marked.parse(text);
+        contentEl.scrollTop = 0;
+
+        // Re-open any hash links in new tab to avoid leaving the SPA
+        contentEl.querySelectorAll('a[href^="http"]').forEach(a => {
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+        });
+
+        // Handle relative .md links within a section folder → load as section
+        contentEl.querySelectorAll('a[href$=".md"]').forEach(a => {
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            // e.g. "./react-performance.md"  → fetch it and display
+            const href = a.getAttribute('href');
+            loadMarkdownFile(mdPath.replace('index.md', '') + href.replace('./', ''));
+          });
+        });
+
+      } catch (err) {
+        contentEl.innerHTML = `<p class="error">Could not load content. (${err.message})</p>`;
+      }
+    }
+
+    // Load an arbitrary .md file path (for sub-pages within a section)
+    async function loadMarkdownFile(path) {
+      contentEl.innerHTML = '<div class="loader">Loading…</div>';
+      try {
+        const res  = await fetch(path);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        contentEl.innerHTML =
+          `<button class="back-btn" onclick="loadSection('${currentSection}')">← Back</button>` +
+          marked.parse(text);
+      } catch (err) {
+        contentEl.innerHTML = `<p class="error">Could not load file. (${err.message})</p>`;
+      }
+    }
+
+    // ─── WIRE UP NAV ──────────────────────────────────────────
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => loadSection(btn.dataset.section));
+    });
+
+    // ─── HASH ROUTING ─────────────────────────────────────────
+    // Allows deep-linking: yourname.github.io/#work
+    function routeFromHash() {
+      const hash = location.hash.replace('#', '') || 'about';
+      if (SECTIONS[hash]) loadSection(hash);
+    }
+    window.addEventListener('hashchange', routeFromHash);
+
+    // Update URL hash on nav click (without page reload)
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        history.replaceState(null, '', '#' + btn.dataset.section);
+      });
+    });
+
+    // ─── INITIAL LOAD ─────────────────────────────────────────
+    routeFromHash();
+  </script>
+</body>
+</html>
