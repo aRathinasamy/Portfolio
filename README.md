@@ -19,12 +19,11 @@
 │   └── index.md            ← About Me content (CV, skills, bio)
 │
 ├── work/
-│   └── index.md            ← Selected Work / Projects
+│   ├── selected-work.html  ← Selected Work (standalone HTML, loaded in iframe)
+│   └── index.md            ← Fallback markdown (kept for reference)
 │
 ├── learnings/
 │   ├── index.md            ← Learnings overview
-│   ├── react-performance.md
-│   ├── postgres-indexing.md
 │   └── ...                 ← Add more sub-pages here
 │
 ├── topic1/
@@ -36,40 +35,33 @@
 
 ---
 
-## ✏️ How to Edit Content
+## ✏️ Two Types of Sections
 
-All content is plain Markdown (`.md`). Just edit the files and push — GitHub Pages will serve the updated content automatically.
+### Markdown sections (About, Learnings, Topics)
+Edit the `.md` file in the subfolder and push. Content is rendered automatically.
 
-**Edit a section:**
-```bash
-# Example: update your About Me
-nano about/index.md
-git add about/index.md
-git commit -m "Update about me"
-git push
-```
+### HTML sections (Selected Work)
+The `work/selected-work.html` file is a fully self-contained HTML page loaded inside an iframe. To update it, replace the `work/selected-work.html` file and push.
 
-**Add a new sub-page inside Learnings:**
-1. Create a file: `learnings/my-new-topic.md`
-2. Link to it from `learnings/index.md`:
-   ```markdown
-   [Read notes →](./my-new-topic.md)
-   ```
-3. Push — it's live!
-
-**Add a new top-level section:**
-1. Create a folder: `my-section/`
-2. Add `my-section/index.md`
-3. In `index.html`, add the section to the `SECTIONS` config object:
+**To add a new HTML section:**
+1. Place your HTML file in a subfolder (e.g. `projects/my-project.html`)
+2. In `index.html`, add it to the `SECTIONS` config with `type: 'html'`:
    ```js
    const SECTIONS = {
      ...
-     mysection: 'my-section/index.md',
+     myproject: { type: 'html', file: 'projects/my-project.html' },
    };
    ```
-4. Add a nav button in the HTML:
+3. Add a nav button:
    ```html
-   <button class="nav-btn" data-section="mysection">My Section</button>
+   <button class="nav-btn" data-section="myproject">My Project</button>
+   ```
+
+**To add a new Markdown section:**
+1. Create a folder and `index.md`
+2. Add to `SECTIONS` with `type: 'md'`:
+   ```js
+   mysection: { type: 'md', file: 'my-section/index.md' },
    ```
 
 ---

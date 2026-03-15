@@ -140,6 +140,16 @@ header {
   padding: 3rem 5rem;
   min-height: 500px;
   flex: 1;
+  transition: padding 0.2s;
+}
+
+/* When showing an iframe, padding is removed via JS.
+   The iframe itself fills the full column width. */
+#html-frame {
+  display: block;
+  width: 100%;
+  border: none;
+  min-height: 80vh;
 }
 
 /* ─── MARKDOWN BODY STYLES ─── */

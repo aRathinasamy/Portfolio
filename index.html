@@ -37,8 +37,20 @@
   </nav>
 
   <!-- CONTENT -->
-  <main class="content-col">
+  <main class="content-col" id="content-col">
     <div id="md-content" class="md-body"></div>
+    <!--
+      iframe is used for sections that have a standalone HTML page
+      (e.g. Selected Work). It is hidden by default and shown only
+      when an HTML section is loaded.
+    -->
+    <iframe
+      id="html-frame"
+      src=""
+      style="display:none; width:100%; border:none; min-height:80vh;"
+      onload="resizeFrame(this)"
+      title="Section content">
+    </iframe>
   </main>
 
   <!-- FOOTER -->
@@ -154,7 +166,23 @@ Strong background in low-latency real-time transport (TCP/UDP/WebSockets), devic
 
 work: `# Selected Work
 
-> XR products, SDKs, and immersive technology projects built across 15+ years in the industry.
+> XR products, SDKs, and immersive technology projects — from production automotive AR deployments to personal Unity experiments.
+
+---
+
+## Virtual Home Configurator
+**Personal Project · Unity · C# · 3D Visualization**
+
+An interactive 3D home configuration application that lets users design and pre-visualize their living space before committing to a purchase. Built entirely in Unity as a personal project to explore real-time 3D product visualization and UX design for non-technical end users.
+
+**Key Features:**
+- 🏠 **Room Layout Design** — users define their floor plan and configure room dimensions in a real-time 3D environment
+- 🛋️ **Furniture Placement** — drag-and-drop furniture catalog with free positioning, rotation, and scaling inside the virtual space
+- 👁️ **Pre-Visualization** — walk through the configured space from a first-person or orbit camera to see how furniture and layouts feel before buying
+- 🛒 **Order Integration** — once satisfied with the design, users can proceed to place an order directly from the configured scene
+- 🎨 **Material & Style Variants** — swap finishes, colors, and fabric options on furniture pieces in real time
+
+**Tech Stack:** Unity 3D · C# · Custom UI System · 3D Asset Pipeline
 
 ---
 
@@ -165,7 +193,7 @@ Built and shipped a production AR SDK packaged as a deployable HoloLens applicat
 
 - Reduced required shop floor manpower from **4 technicians to 1**
 - Cut processing time from **3 days to 1 hour**
-- Delivered full integration documentation and onboarding guides for internal and external teams
+- Full integration documentation and onboarding guides for internal and external teams
 
 ---
 
@@ -280,19 +308,49 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
 
     }; // end EMBEDDED
 
-    // ─── FILE MAP (used on GitHub Pages / HTTP server) ───────
+    // ─── FILE MAP ────────────────────────────────────────────
+    // For markdown sections, set type: 'md' and a file path.
+    // For standalone HTML sections, set type: 'html' and a file path.
     const SECTIONS = {
-      about:     'about/index.md',
-      work:      'work/index.md',
-      learnings: 'learnings/index.md',
-      topic1:    'topic1/index.md',
-      topic2:    'topic2/index.md',
+      about:     { type: 'md',   file: 'about/index.md' },
+      work:      { type: 'html', file: 'work/selected-work.html' },
+      learnings: { type: 'md',   file: 'learnings/index.md' },
+      topic1:    { type: 'md',   file: 'topic1/index.md' },
+      topic2:    { type: 'md',   file: 'topic2/index.md' },
     };
 
-    // ─── RENDERING ───────────────────────────────────────────
-    const contentEl = document.getElementById('md-content');
+    // ─── ELEMENTS ────────────────────────────────────────────
+    const contentEl  = document.getElementById('md-content');
+    const frameEl    = document.getElementById('html-frame');
+    const contentCol = document.getElementById('content-col');
     let currentSection = null;
 
+    // ─── IFRAME HELPERS ──────────────────────────────────────
+    function showFrame(src) {
+      contentEl.style.display = 'none';
+      frameEl.style.display   = 'block';
+      contentCol.style.padding = '0';  // let the HTML page own its spacing
+      if (frameEl.src !== location.origin + '/' + src && frameEl.getAttribute('src') !== src) {
+        frameEl.src = src;
+      }
+    }
+
+    function showMarkdown() {
+      frameEl.style.display   = 'none';
+      frameEl.src             = '';
+      contentEl.style.display = 'block';
+      contentCol.style.padding = '';  // restore CSS default
+    }
+
+    // Auto-resize iframe to its content height
+    function resizeFrame(f) {
+      try {
+        const h = f.contentDocument.body.scrollHeight;
+        if (h > 200) f.style.minHeight = h + 'px';
+      } catch(e) { /* cross-origin — leave min-height as is */ }
+    }
+
+    // ─── MARKDOWN HELPERS ────────────────────────────────────
     function renderMarkdown(mdText) {
       contentEl.innerHTML = marked.parse(mdText);
       contentEl.querySelectorAll('a[href^="http"]').forEach(a => {
@@ -302,7 +360,7 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
         a.addEventListener('click', e => {
           e.preventDefault();
           const href = a.getAttribute('href');
-          loadMdFile(SECTIONS[currentSection].replace('index.md', '') + href.replace('./', ''));
+          loadMdFile(SECTIONS[currentSection].file.replace('index.md', '') + href.replace('./', ''));
         });
       });
       contentEl.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -313,16 +371,26 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
       });
     }
 
+    // ─── LOAD SECTION ────────────────────────────────────────
     async function loadSection(section) {
       if (section === currentSection) return;
       currentSection = section;
+
       document.querySelectorAll('.nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.section === section));
 
-      // Try fetching the .md file first (works on HTTP/GitHub Pages)
-      // If fetch is blocked (local file://) fall back to embedded content
+      const cfg = SECTIONS[section];
+
+      // ── HTML section → show in iframe ──
+      if (cfg.type === 'html') {
+        showFrame(cfg.file);
+        return;
+      }
+
+      // ── Markdown section → fetch or fallback to embedded ──
+      showMarkdown();
       try {
-        const res = await fetch(SECTIONS[section]);
+        const res = await fetch(cfg.file);
         if (!res.ok) throw new Error('fetch failed');
         renderMarkdown(await res.text());
       } catch {
