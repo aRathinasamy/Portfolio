@@ -37,20 +37,8 @@
   </nav>
 
   <!-- CONTENT -->
-  <main class="content-col" id="content-col">
+  <main class="content-col">
     <div id="md-content" class="md-body"></div>
-    <!--
-      iframe is used for sections that have a standalone HTML page
-      (e.g. Selected Work). It is hidden by default and shown only
-      when an HTML section is loaded.
-    -->
-    <iframe
-      id="html-frame"
-      src=""
-      style="display:none; width:100%; border:none; min-height:80vh;"
-      onload="resizeFrame(this)"
-      title="Section content">
-    </iframe>
   </main>
 
   <!-- FOOTER -->
@@ -309,8 +297,8 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
     }; // end EMBEDDED
 
     // ─── FILE MAP ────────────────────────────────────────────
-    // For markdown sections, set type: 'md' and a file path.
-    // For standalone HTML sections, set type: 'html' and a file path.
+    // type: 'md'   → fetched and rendered as Markdown
+    // type: 'html' → fetched and injected as raw HTML
     const SECTIONS = {
       about:     { type: 'md',   file: 'about/index.md' },
       work:      { type: 'html', file: 'work/selected-work.html' },
@@ -321,33 +309,89 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
 
     // ─── ELEMENTS ────────────────────────────────────────────
     const contentEl  = document.getElementById('md-content');
-    const frameEl    = document.getElementById('html-frame');
     const contentCol = document.getElementById('content-col');
     let currentSection = null;
 
-    // ─── IFRAME HELPERS ──────────────────────────────────────
-    function showFrame(src) {
-      contentEl.style.display = 'none';
-      frameEl.style.display   = 'block';
-      contentCol.style.padding = '0';  // let the HTML page own its spacing
-      if (frameEl.src !== location.origin + '/' + src && frameEl.getAttribute('src') !== src) {
-        frameEl.src = src;
+    // ─── LOAD SECTION ────────────────────────────────────────
+    async function loadSection(section) {
+      if (section === currentSection) return;
+      currentSection = section;
+
+      document.querySelectorAll('.nav-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.section === section));
+
+      const cfg = SECTIONS[section];
+
+      // ── HTML section → fetch and inject into content div ──
+      if (cfg && cfg.type === 'html') {
+        try {
+          const res = await fetch(cfg.file);
+          if (!res.ok) throw new Error('fetch failed');
+          const html = await res.text();
+          // Extract <body> content and inject it; also pull <style> blocks
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          // Inject any <style> tags from the fetched page (scoped to avoid conflicts)
+          let styles = '';
+          doc.querySelectorAll('style').forEach(s => { styles += s.outerHTML; });
+
+          // Get the body content
+          const body = doc.body.innerHTML;
+
+          // Remove existing injected styles
+          document.querySelectorAll('style[data-injected]').forEach(s => s.remove());
+
+          // Add styles
+          if (styles) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = styles;
+            wrapper.querySelectorAll('style').forEach(s => {
+              s.setAttribute('data-injected', '1');
+              document.head.appendChild(s);
+            });
+          }
+
+          // Remove markdown padding, inject HTML directly
+          contentEl.className = 'html-section';
+          contentEl.innerHTML = body;
+
+          // Re-run any <script> tags in the injected content
+          contentEl.querySelectorAll('script').forEach(old => {
+            const s = document.createElement('script');
+            s.textContent = old.textContent;
+            old.replaceWith(s);
+          });
+
+        } catch {
+          // Fallback: show a message if fetch fails (e.g. opened as file://)
+          contentEl.className = 'md-body';
+          contentEl.innerHTML = `
+            <div style="padding:3rem;text-align:center;color:var(--muted)">
+              <p style="font-size:1rem;margin-bottom:1rem">📂 Selected Work</p>
+              <p style="font-size:.85rem;margin-bottom:1.5rem">
+                Open this portfolio with a local server or on GitHub Pages to view the full Selected Work page.
+              </p>
+              <a href="work/selected-work.html" style="color:var(--teal);font-size:.85rem">
+                → Open Selected Work directly
+              </a>
+            </div>`;
+        }
+        return;
       }
-    }
 
-    function showMarkdown() {
-      frameEl.style.display   = 'none';
-      frameEl.src             = '';
-      contentEl.style.display = 'block';
-      contentCol.style.padding = '';  // restore CSS default
-    }
+      // ── Markdown section ──
+      contentEl.className = 'md-body';
+      // Remove any previously injected styles
+      document.querySelectorAll('style[data-injected]').forEach(s => s.remove());
 
-    // Auto-resize iframe to its content height
-    function resizeFrame(f) {
       try {
-        const h = f.contentDocument.body.scrollHeight;
-        if (h > 200) f.style.minHeight = h + 'px';
-      } catch(e) { /* cross-origin — leave min-height as is */ }
+        const res = await fetch(cfg.file);
+        if (!res.ok) throw new Error('fetch failed');
+        renderMarkdown(await res.text());
+      } catch {
+        renderMarkdown(EMBEDDED[section] || '# Not found');
+      }
     }
 
     // ─── MARKDOWN HELPERS ────────────────────────────────────
@@ -369,33 +413,6 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
           a.addEventListener('click', e => { e.preventDefault(); loadSection(sec); });
         }
       });
-    }
-
-    // ─── LOAD SECTION ────────────────────────────────────────
-    async function loadSection(section) {
-      if (section === currentSection) return;
-      currentSection = section;
-
-      document.querySelectorAll('.nav-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.section === section));
-
-      const cfg = SECTIONS[section];
-
-      // ── HTML section → show in iframe ──
-      if (cfg.type === 'html') {
-        showFrame(cfg.file);
-        return;
-      }
-
-      // ── Markdown section → fetch or fallback to embedded ──
-      showMarkdown();
-      try {
-        const res = await fetch(cfg.file);
-        if (!res.ok) throw new Error('fetch failed');
-        renderMarkdown(await res.text());
-      } catch {
-        renderMarkdown(EMBEDDED[section] || '# Not found');
-      }
     }
 
     async function loadMdFile(path) {
