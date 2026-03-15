@@ -17,7 +17,7 @@
   <header>
     <div class="photo-circle">
       <!-- To add photo: set src, remove style="display:none", remove .photo-placeholder div -->
-      <img src="assets/profilePhoto.jpg" alt="Rathinasamy Arulappan" style="display:none" />
+      <img src="assets/photo.jpg" alt="Rathinasamy Arulappan" style="display:none" />
       <div class="photo-placeholder">Photo</div>
     </div>
     <div class="header-text">
@@ -222,6 +222,18 @@ learnings: `# Learnings
 
 ---
 
+## 🎮 Unity 3D — Study Notes
+
+**C# · Animation · UI · OOP · Scripting · June 2017**
+
+A comprehensive set of notes covering Unity's animation system, UI framework, and deep dives into C# concepts as applied to Unity development — including OOP fundamentals, polymorphism, access modifiers, and the Interface vs Abstract Class distinction.
+
+Topics covered: Animator, Blend Trees, Canvas, Sprites, Time Scale, Vector Math, Arrays, Data Types, Inheritance, Polymorphism, Access Modifiers, Abstract/Sealed/Static Classes, Interfaces.
+
+[→ Open Unity Study Notes](./unity/index.html)
+
+---
+
 ## XR & Immersive Technology
 
 **Ongoing · 15+ years**
@@ -325,7 +337,8 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
       // ── HTML section → fetch and inject into content div ──
       if (cfg && cfg.type === 'html') {
         try {
-          const res = await fetch(cfg.file);
+          // Cache-bust so GitHub Pages always serves the latest version
+          const res = await fetch(cfg.file + '?v=' + Date.now());
           if (!res.ok) throw new Error('fetch failed');
           const html = await res.text();
           // Extract <body> content and inject it; also pull <style> blocks
@@ -411,9 +424,11 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
     // ─── MARKDOWN HELPERS ────────────────────────────────────
     function renderMarkdown(mdText) {
       contentEl.innerHTML = marked.parse(mdText);
+      // External links → open in new tab
       contentEl.querySelectorAll('a[href^="http"]').forEach(a => {
         a.target = '_blank'; a.rel = 'noopener noreferrer';
       });
+      // .md sub-page links → load as markdown
       contentEl.querySelectorAll('a[href$=".md"]').forEach(a => {
         a.addEventListener('click', e => {
           e.preventDefault();
@@ -421,6 +436,17 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
           loadMdFile(SECTIONS[currentSection].file.replace('index.md', '') + href.replace('./', ''));
         });
       });
+      // .html sub-page links → inject as HTML
+      contentEl.querySelectorAll('a[href$=".html"]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (href.startsWith('http')) return; // skip external
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          const base = SECTIONS[currentSection].file.replace('index.md', '');
+          loadHtmlSubPage(base + href.replace('./', ''));
+        });
+      });
+      // Hash nav links → switch section
       contentEl.querySelectorAll('a[href^="#"]').forEach(a => {
         const sec = a.getAttribute('href').replace('#', '');
         if (SECTIONS[sec]) {
@@ -434,11 +460,54 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
       try {
         const res = await fetch(path);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        contentEl.className = 'md-body';
         contentEl.innerHTML =
           `<button class="back-btn" onclick="loadSection('${currentSection}')">← Back</button>` +
           marked.parse(await res.text());
       } catch (err) {
         contentEl.innerHTML = `<p class="error">Could not load file (${err.message})</p>`;
+      }
+    }
+
+    async function loadHtmlSubPage(path) {
+      contentEl.innerHTML = '<div class="loader">Loading…</div>';
+      try {
+        const res = await fetch(path + '?v=' + Date.now());
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Inject styles
+        document.querySelectorAll('style[data-injected]').forEach(s => s.remove());
+        doc.querySelectorAll('style').forEach(s => {
+          const ns = document.createElement('style');
+          ns.textContent = s.textContent;
+          ns.setAttribute('data-injected', '1');
+          document.head.appendChild(ns);
+        });
+
+        // Fix relative image paths
+        const baseFolder = path.includes('/') ? path.substring(0, path.lastIndexOf('/') + 1) : '';
+        const fixedBody = doc.body.innerHTML.replace(
+          /(\s(?:src|href))="(?!https?:\/\/|\/|data:)([^"]+)"/gi,
+          (_, attr, p) => `${attr}="${baseFolder}${p}"`
+        );
+
+        // Back button + injected content
+        contentEl.className = 'html-section';
+        contentEl.innerHTML =
+          `<button class="back-btn" style="margin:1.5rem 2rem" onclick="loadSection('${currentSection}')">← Back to Learnings</button>` +
+          fixedBody;
+
+        // Re-run scripts
+        contentEl.querySelectorAll('script').forEach(old => {
+          const s = document.createElement('script');
+          s.textContent = old.textContent;
+          old.replaceWith(s);
+        });
+      } catch (err) {
+        contentEl.innerHTML = `<p class="error">Could not load page (${err.message})</p>`;
       }
     }
 

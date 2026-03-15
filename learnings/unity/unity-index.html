@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unity Study Notes — Rathinasamy Arulappan</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --teal:#216e8e;--teal-dark:#1b5e7b;--teal-pale:#e8f4f9;
+      --line:#c8dfe8;--text:#1a2e38;--muted:#607d8b;
+      --white:#fff;--bg:#f7fbfd;
+      --serif:'DM Serif Display',Georgia,serif;
+      --sans:'DM Sans',sans-serif;
+      --mono:'JetBrains Mono',monospace;
+      --radius:8px;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.7;padding:0 0 4rem}
+
+    /* PAGE HEADER */
+    .page-header{background:linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 100%);color:#fff;padding:3rem 4rem 2.5rem}
+    .page-header .breadcrumb{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-bottom:.8rem}
+    .page-header .breadcrumb a{color:inherit;text-decoration:none;opacity:.8}
+    .page-header .breadcrumb a:hover{opacity:1}
+    .page-header h1{font-family:var(--serif);font-size:2.6rem;line-height:1.1;margin-bottom:.5rem}
+    .page-header .meta{font-size:.82rem;opacity:.7;display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.5rem}
+    .page-header .meta span::before{content:'· ';opacity:.5}
+    .page-header .meta span:first-child::before{content:''}
+
+    /* LAYOUT */
+    .layout{display:grid;grid-template-columns:220px 1fr;gap:0;max-width:1100px;margin:2.5rem auto 0;padding:0 1.5rem}
+
+    /* SIDEBAR */
+    .sidebar{position:sticky;top:1.5rem;align-self:start;padding-right:1.5rem}
+    .sidebar h3{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+    .toc{display:flex;flex-direction:column;gap:.3rem}
+    .toc-item{padding:.5rem .9rem;border-radius:var(--radius);font-size:.76rem;cursor:pointer;border:1px solid transparent;color:var(--muted);transition:all .2s;text-decoration:none;display:block}
+    .toc-item:hover{background:var(--teal-pale);color:var(--teal);border-color:var(--line)}
+    .toc-item.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+    /* CONTENT */
+    .content{min-width:0}
+
+    /* SECTION CARD */
+    .section-card{background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;box-shadow:0 2px 12px rgba(27,94,123,.05)}
+
+    /* SECTION HEADER (accordion) */
+    .sec-header{display:flex;align-items:center;gap:1.2rem;padding:1.3rem 1.8rem;cursor:pointer;border-bottom:1px solid transparent;transition:background .2s,border-color .2s;user-select:none}
+    .sec-header:hover{background:var(--teal-pale)}
+    .section-card.open .sec-header{border-bottom-color:var(--line);background:var(--teal-pale)}
+    .sec-icon{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:var(--teal-pale);color:var(--teal);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .2s}
+    .section-card.open .sec-icon{background:var(--teal);border-color:var(--teal)}
+    .sec-meta{flex:1;min-width:0}
+    .sec-meta h2{font-family:var(--serif);font-size:1.2rem;color:var(--text);margin-bottom:.2rem;line-height:1.2}
+    .sec-meta .sec-desc{font-size:.75rem;color:var(--muted)}
+    .toggle-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--white);color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;line-height:1}
+    .section-card.open .toggle-btn{background:var(--teal);border-color:var(--teal);color:#fff;transform:rotate(45deg)}
+
+    /* ACCORDION BODY */
+    .sec-body{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(0,.85,.3,1)}
+    .section-card.open .sec-body{max-height:9999px}
+    .sec-inner{padding:2rem 2.2rem 2.5rem}
+
+    /* TYPOGRAPHY */
+    .sec-inner h3{font-family:var(--serif);font-size:1.4rem;color:var(--teal-dark);margin:2rem 0 .6rem;padding-bottom:.4rem;border-bottom:1px solid var(--line)}
+    .sec-inner h3:first-child{margin-top:0}
+    .sec-inner h4{font-size:.85rem;font-weight:600;color:var(--teal);margin:1.3rem 0 .4rem}
+    .sec-inner p{font-size:.85rem;line-height:1.9;color:#3a4f58;margin-bottom:.8rem}
+    .sec-inner ul,.sec-inner ol{margin:.3rem 0 .9rem 1.4rem;font-size:.84rem;color:#3a4f58}
+    .sec-inner li{margin-bottom:.3rem;line-height:1.7}
+    .sec-inner strong{font-weight:600;color:var(--text)}
+
+    /* CALLOUT */
+    .callout{background:var(--teal-pale);border-left:3px solid var(--teal);padding:.9rem 1.2rem;border-radius:0 var(--radius) var(--radius) 0;margin:1rem 0;font-size:.84rem;font-style:italic;color:var(--teal-dark)}
+
+    /* NOTE BOX */
+    .note{background:#fffbeb;border-left:3px solid #f59e0b;padding:.8rem 1.1rem;border-radius:0 var(--radius) var(--radius) 0;margin:1rem 0;font-size:.8rem;color:#78350f}
+    .note strong{color:#92400e}
+
+    /* CODE */
+    .sec-inner code{background:var(--teal-pale);color:var(--teal-dark);padding:.12em .4em;border-radius:4px;font-family:var(--mono);font-size:.78em}
+    pre{background:#1a2e38;color:#b8f5a0;padding:1.2rem 1.4rem;border-radius:var(--radius);overflow-x:auto;margin:1rem 0;font-family:var(--mono);font-size:.78rem;line-height:1.7}
+    pre code{background:none;color:inherit;padding:0;font-size:inherit}
+
+    /* COMPARISON TABLE */
+    .cmp-table{width:100%;border-collapse:collapse;font-size:.81rem;margin:1rem 0}
+    .cmp-table th{background:var(--teal-pale);color:var(--teal-dark);padding:.55rem .9rem;text-align:left;font-weight:600;border-bottom:2px solid var(--line)}
+    .cmp-table td{padding:.55rem .9rem;border-bottom:1px solid var(--teal-pale);color:var(--text);vertical-align:top}
+    .cmp-table tr:last-child td{border-bottom:none}
+    .cmp-table td:first-child{font-weight:600;color:var(--teal-dark);white-space:nowrap}
+
+    /* ACCESS MODIFIER TABLE */
+    .access-table{width:100%;border-collapse:collapse;font-size:.78rem;margin:1rem 0}
+    .access-table th{background:#1a2e38;color:#b8f5a0;padding:.5rem .8rem;text-align:center;font-weight:500;font-family:var(--mono)}
+    .access-table th:first-child{text-align:left}
+    .access-table td{padding:.45rem .8rem;border-bottom:1px solid var(--line);text-align:center}
+    .access-table td:first-child{text-align:left;font-weight:600;color:var(--teal-dark);font-family:var(--mono)}
+    .yes{color:#16a34a;font-weight:600}
+    .no{color:#dc2626}
+
+    /* IMAGES */
+    .fig{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--white);margin:1.2rem 0;box-shadow:0 2px 8px rgba(27,94,123,.05)}
+    .fig img{width:100%;display:block;height:auto}
+    .fig-cap{padding:.55rem .9rem;font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);line-height:1.5;font-style:italic}
+    .fig-cap strong{display:block;color:var(--teal-dark);font-size:.7rem;font-style:normal;margin-bottom:.1rem}
+    .figs-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin:1.2rem 0}
+    .fig-full{grid-column:1/-1}
+
+    .page-footer{text-align:center;padding:2.5rem 2rem 1rem;font-size:.65rem;color:var(--muted);border-top:1px solid var(--line);margin-top:2.5rem}
+
+    @media(max-width:800px){
+      .page-header{padding:2rem 1.5rem}
+      .layout{grid-template-columns:1fr;padding:0 1rem}
+      .sidebar{position:static;padding-right:0;margin-bottom:1.5rem}
+      .toc{flex-direction:row;flex-wrap:wrap}
+      .figs-grid{grid-template-columns:1fr}
+      .fig-full{grid-column:1}
+      .sec-inner{padding:1.4rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="#">Learnings</a> / Unity</div>
+  <h1>Unity 3D — Study Notes</h1>
+  <div class="meta">
+    <span>C# · Unity Engine</span>
+    <span>OOP · Animation · UI · Scripting</span>
+    <span>Started June 2017</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="sidebar">
+    <h3>Topics</h3>
+    <div class="toc">
+      <a class="toc-item active" onclick="jumpTo('s1')">🎬 Animation Controller</a>
+      <a class="toc-item" onclick="jumpTo('s2')">🖥️ Unity UI</a>
+      <a class="toc-item" onclick="jumpTo('s3')">⏱️ Time Scale & Vectors</a>
+      <a class="toc-item" onclick="jumpTo('s4')">📦 Arrays & Data Types</a>
+      <a class="toc-item" onclick="jumpTo('s5')">🧱 OOP Fundamentals</a>
+      <a class="toc-item" onclick="jumpTo('s6')">🔁 Polymorphism</a>
+      <a class="toc-item" onclick="jumpTo('s7')">🔐 Access Modifiers</a>
+      <a class="toc-item" onclick="jumpTo('s8')">🧩 Interfaces & Abstract</a>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ══════════════════════════════════════
+         SECTION 1 — ANIMATION CONTROLLER
+    ═══════════════════════════════════════ -->
+    <div class="section-card open" id="s1">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🎬</div>
+        <div class="sec-meta">
+          <h2>Unity Animation Controller</h2>
+          <div class="sec-desc">Animator, layers, blend trees, root motion</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Animator Component</h3>
+        <p>The <strong>Animator</strong> component controls animation playback on a GameObject using an <strong>Animator Controller</strong> — a state machine that manages transitions between animation clips.</p>
+
+        <h4>Apply Root Motion</h4>
+        <p>When <strong>Apply Root Motion</strong> is enabled, the GameObject moves in world space according to the movement embedded in the animation itself. Disable it if you want to control movement purely from scripts.</p>
+
+        <h4>Playing Animations from Code</h4>
+        <pre><code>// anim.Play( stateName, layerIndex, normalizedTime )
+anim.Play("wait", -1, 0f);   // Play from start (0f)
+anim.Play("wait", -1, 0.5f); // Play from mid-point (0.5f)</code></pre>
+        <p><code>-1</code> refers to the <strong>Base Layer</strong> (index -1 is always the default root layer).</p>
+
+        <h4>Layers</h4>
+        <ul>
+          <li>Animation states are organised into <strong>layers</strong></li>
+          <li>The <strong>Base Layer</strong> is the default root layer with index <code>-1</code></li>
+          <li>Additional layers can override or add to the base animation (e.g., upper-body overlay)</li>
+        </ul>
+
+        <h4>Blend Tree</h4>
+        <p>A <strong>Blend Tree</strong> is a child layer of the Base Layer used to smoothly blend between multiple animations based on one or two float parameters.</p>
+        <p><strong>Blend Types available:</strong></p>
+        <ul>
+          <li><strong>1D</strong> — blend based on a single float parameter</li>
+          <li><strong>2D Simple Directional</strong> — blend by direction (one motion per direction)</li>
+          <li><strong>2D Freeform Directional</strong> — blend by direction with multiple motions per direction</li>
+          <li><strong>2D Freeform Cartesian</strong> — blend along X and Y axes independently</li>
+          <li><strong>Direct</strong> — manually set blend weights from script</li>
+        </ul>
+
+        <h4>Animation Clip Features</h4>
+        <ul>
+          <li><strong>Curve</strong> — float values animated over time alongside the clip, readable from scripts</li>
+          <li><strong>Event</strong> — callbacks to trigger script functions at specific frames of the animation</li>
+        </ul>
+
+        <div class="note">
+          <strong>Resource:</strong> C# with Unity Scripting Video Tutorials In Depth — Chidre's Tech Tutorials covers animation scripting in detail.
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 2 — UNITY UI
+    ═══════════════════════════════════════ -->
+    <div class="section-card open" id="s2">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🖥️</div>
+        <div class="sec-meta">
+          <h2>Unity UI System</h2>
+          <div class="sec-desc">Canvas, anchors, sprite renderer, text, transformations</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Canvas</h3>
+        <p>The <strong>Canvas</strong> is the root container for all Unity UI elements. Every UI element must be a child of a Canvas. The Canvas itself is a GameObject with a <code>Canvas</code> component attached.</p>
+
+        <h4>Canvas Render Modes</h4>
+        <table class="cmp-table">
+          <tr><th>Mode</th><th>Description</th></tr>
+          <tr><td>Screen Space — Overlay</td><td>Renders on top of everything, always facing the camera. No camera required.</td></tr>
+          <tr><td>Screen Space — Camera</td><td>Rendered by a specific camera. Allows post-processing effects on UI.</td></tr>
+          <tr><td>World Space</td><td>Canvas exists as a 3D object in the scene — used for in-world UI like health bars on enemies.</td></tr>
+        </table>
+
+        <h4>Canvas Scaler — UI Scale Modes</h4>
+        <ul>
+          <li><strong>Constant Pixel Size</strong> — UI stays the same pixel size regardless of screen resolution</li>
+          <li><strong>Scale with Screen Size</strong> — UI scales to match the screen resolution (recommended for most projects)</li>
+          <li><strong>Constant Physical Size</strong> — UI maintains a fixed physical size based on DPI</li>
+        </ul>
+        <div class="callout">For responsive UI: use <strong>Scale with Screen Size</strong> and set Screen Match Mode to <strong>Expand</strong> — this ensures the UI scales cleanly across different resolutions without cropping.</div>
+
+        <h4>UI Anchor Presets</h4>
+        <ul>
+          <li>Anchors define how a UI element is positioned relative to its parent</li>
+          <li><strong>Click preset</strong> — moves the anchor pivot</li>
+          <li><strong>Alt + Click preset</strong> — snaps the element to that anchor position</li>
+          <li><strong>Shift + Alt + Click preset</strong> — snaps the element AND moves its centre pivot to the anchor position</li>
+        </ul>
+
+        <h3>Sprite Renderer vs Mesh Renderer</h3>
+        <p>2D images (sprites) are displayed using a <strong>Sprite Renderer</strong> component, not the Mesh Renderer used by 3D objects. Sprites work in both 2D and 3D scenes.</p>
+
+        <h4>Pixels Per Unit</h4>
+        <p>The <strong>Pixels Per Unit</strong> setting defines how many sprite pixels equal one Unity world unit.</p>
+        <ul>
+          <li>Default: <strong>100 pixels = 1 unit</strong> — a 100px sprite fills exactly 1 unit in the scene</li>
+          <li>A lower value means each pixel represents more world space (affects physics forces needed to move objects)</li>
+          <li>Tip: for 16×16 tile sprites, set Pixels Per Unit to <strong>16</strong> so tiles snap together perfectly in the scene</li>
+        </ul>
+
+        <h3>Text & Transformations</h3>
+        <h4>Text Outline Effect</h4>
+        <p>Add the <strong>Outline</strong> component to any Text element to add a coloured border. Unity's legacy Text component also supports simple HTML-style rich text tags: <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, <code>&lt;color=#hex&gt;</code>.</p>
+
+        <h4>Transform Field Arithmetic</h4>
+        <p>In the Transform Inspector, you can type arithmetic expressions directly into X/Y/Z fields — Unity evaluates them automatically. For example, typing <code>5*2</code> sets the value to <code>10</code>.</p>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 3 — TIME SCALE & VECTORS
+    ═══════════════════════════════════════ -->
+    <div class="section-card open" id="s3">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">⏱️</div>
+        <div class="sec-meta">
+          <h2>Time Scale & Vector Math</h2>
+          <div class="sec-desc">Slow motion, pause, magnitude, dot & cross product</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Time Scale</h3>
+        <p><code>Time.timeScale</code> controls the speed at which time passes in the simulation. It affects all time-based functions (<code>Time.deltaTime</code>, physics, animations) except <code>Time.realtimeSinceStartup</code>.</p>
+
+        <table class="cmp-table">
+          <tr><th>Value</th><th>Effect</th></tr>
+          <tr><td><code>1.0</code></td><td>Normal real-time speed</td></tr>
+          <tr><td><code>0.5</code></td><td>Slow motion — time passes 2× slower than real time</td></tr>
+          <tr><td><code>0.0</code></td><td>Game paused — all frame-rate independent functions stop</td></tr>
+        </table>
+
+        <div class="note">
+          <strong>Important:</strong> When lowering <code>timeScale</code>, also lower <code>Time.fixedDeltaTime</code> by the same ratio to keep physics consistent. <code>FixedUpdate()</code> is not called when <code>timeScale = 0</code>.
+        </div>
+
+        <h3>Vector Math</h3>
+
+        <h4>Magnitude</h4>
+        <p>Returns the <strong>length</strong> (distance) of a vector — i.e., the straight-line distance between two points.</p>
+        <pre><code>float dist = (targetPos - transform.position).magnitude;</code></pre>
+
+        <h4>Dot Product</h4>
+        <p>Takes <strong>two vectors</strong>, returns a <strong>scalar</strong>. Useful for checking the relationship between directions:</p>
+        <ul>
+          <li>Result = <code>0</code> → vectors are perpendicular (90°)</li>
+          <li>Result > <code>0</code> → vectors point in roughly the same direction</li>
+          <li>Result < <code>0</code> → vectors point in opposite directions</li>
+        </ul>
+        <pre><code>float dot = Vector3.Dot(vectorA, vectorB);</code></pre>
+
+        <h4>Cross Product</h4>
+        <p>Takes <strong>two vectors</strong>, returns a <strong>third vector</strong> perpendicular to both. Used to find the normal of a surface or determine rotation direction.</p>
+        <pre><code>Vector3 perp = Vector3.Cross(vectorA, vectorB);</code></pre>
+
+        <h4>Trigonometry — Finding an Angle</h4>
+        <pre><code>// Returns the angle (in radians) of a direction vector
+float angle = Mathf.Atan2(y, x);
+// Convert to degrees
+float angleDeg = angle * Mathf.Rad2Deg;</code></pre>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 4 — ARRAYS & DATA TYPES
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s4">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">📦</div>
+        <div class="sec-meta">
+          <h2>Arrays, Data Types & Conversion</h2>
+          <div class="sec-desc">Pass by reference, float/double/decimal, implicit & explicit casting</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Arrays</h3>
+        <div class="callout">Arrays in C# are passed to methods by <strong>reference</strong>, not by value. Any changes made inside the method affect the original array.</div>
+
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/arrays-pass-by-ref.png" alt="Arrays pass by reference code example" loading="lazy"/>
+            <div class="fig-cap"><strong>Pass by Reference</strong>Modifying the array inside <code>AddOneToArray()</code> affects the original — the output shows the updated values, not the originals.</div>
+          </div>
+        </div>
+
+        <h3>Numeric Data Types</h3>
+        <table class="cmp-table">
+          <tr><th>Type</th><th>Suffix</th><th>Example</th><th>Note</th></tr>
+          <tr><td>float</td><td><code>f</code></td><td><code>22.2f</code></td><td>Without <code>f</code>, treated as double</td></tr>
+          <tr><td>double</td><td><code>d</code></td><td><code>22.2d</code></td><td>Default for floating-point literals</td></tr>
+          <tr><td>decimal</td><td><code>m</code></td><td><code>22.2m</code></td><td>High precision, used for currency</td></tr>
+        </table>
+
+        <h3>Type Conversion</h3>
+
+        <h4>Implicit Conversion (Coercion)</h4>
+        <p>Automatically performed by the compiler when assigning a <strong>smaller</strong> type to a <strong>larger</strong> type — no data loss possible.</p>
+        <pre><code>short s = 10;   // 2 bytes
+int i = s;      // implicit — safe, int is 4 bytes</code></pre>
+
+        <h4>Explicit Conversion (Type Casting)</h4>
+        <p>Required when converting a <strong>larger</strong> type into a <strong>smaller</strong> one — must be explicitly specified by the programmer.</p>
+        <pre><code>int i = 10;
+short s = (short) i;    // explicit cast
+
+// Parse string to int
+int a = int.Parse("22");
+
+// Primitive to string
+string str = Convert.ToString(123);</code></pre>
+
+        <h3>Boxing & Unboxing</h3>
+        <ul>
+          <li><strong>Boxing</strong> — wrapping a primitive value type inside an <code>Object</code> container (e.g., storing an <code>int</code> as <code>object</code>)</li>
+          <li><strong>Unboxing</strong> — extracting the primitive value back out of the <code>Object</code> wrapper</li>
+        </ul>
+        <div class="note"><strong>Performance note:</strong> Boxing and unboxing involve heap allocation. Avoid them in performance-critical loops in Unity (e.g., inside <code>Update()</code>).</div>
+
+        <h3>print() vs Debug.Log()</h3>
+        <table class="cmp-table">
+          <tr><th>Method</th><th>Available in</th><th>Call chain</th></tr>
+          <tr><td><code>print()</code></td><td>MonoBehaviour only</td><td>Calls <code>Debug.Log()</code> → <code>Debug.Internal_Log()</code> — 3 hops</td></tr>
+          <tr><td><code>Debug.Log()</code></td><td>Any class</td><td>Calls <code>Debug.Internal_Log()</code> directly — 2 hops</td></tr>
+        </table>
+        <p>Prefer <code>Debug.Log()</code> — it's slightly more efficient and available everywhere, not just in MonoBehaviour subclasses.</p>
+
+        <h3>Operator Overloading — String + Number</h3>
+        <p>The <code>+</code> operator is overloaded. Its behaviour changes based on operand types:</p>
+        <pre><code>string + string = string   // concatenation
+string + num    = string   // num converted to string
+num    + num    = num       // addition
+string + num + num = string // left-to-right: first concat, then concat
+string + (num + num) = string // inner brackets add first, then concat</code></pre>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 5 — OOP FUNDAMENTALS
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s5">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🧱</div>
+        <div class="sec-meta">
+          <h2>OOP Fundamentals</h2>
+          <div class="sec-desc">Classes, inheritance, memory model, this/base keywords</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Core OOP Concepts</h3>
+        <table class="cmp-table">
+          <tr><th>Concept</th><th>Definition</th></tr>
+          <tr><td>Class</td><td>A blueprint or template for creating objects. Defines properties and behaviour.</td></tr>
+          <tr><td>Object</td><td>A runtime instance of a class. Represents a real-world entity (player, enemy, vehicle).</td></tr>
+          <tr><td>Encapsulation</td><td>Wrapping data and the methods that operate on it into a single unit (the class).</td></tr>
+          <tr><td>Inheritance</td><td>Creating a new class based on an existing class, reusing and extending its behaviour.</td></tr>
+          <tr><td>Abstraction</td><td>Hiding unnecessary implementation details — exposing only what the user needs.</td></tr>
+          <tr><td>Polymorphism</td><td>The ability for one construct to take many forms (method overloading, overriding).</td></tr>
+        </table>
+
+        <h3>Inheritance</h3>
+        <p>Inheritance organises classes into a hierarchy from <strong>general → specialised</strong>. A derived class inherits all non-private members of its base class.</p>
+        <ul>
+          <li>Represents an <strong>"is-a"</strong> relationship (a <code>TV</code> <em>is a</em> <code>Device</code>)</li>
+          <li>Promotes <strong>reusability</strong> — reduce code duplication</li>
+          <li>Promotes <strong>extensibility</strong> — add specialised behaviour without modifying the base</li>
+        </ul>
+
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/inheritance-hierarchy.png" alt="Inheritance hierarchy — Device, TV, AC, Refrigerator" loading="lazy"/>
+            <div class="fig-cap"><strong>Inheritance Hierarchy</strong><code>Device</code> is the base class. <code>TV</code>, <code>AC</code> and <code>Refrigerator</code> each override <code>SwitchOn()</code>. <code>LGTV</code>, <code>LGAC</code> and <code>LGR</code> further extend those derived classes.</div>
+          </div>
+        </div>
+
+        <h3>Reference vs Instance</h3>
+        <pre><code>B b1 = new B();
+//  b1  → reference variable (stores a memory address)
+// new B() → instance / object allocated on the heap</code></pre>
+
+        <h3>Memory: Stack & Heap</h3>
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/memory-stack-heap.png" alt="Stack and Heap memory diagram" loading="lazy"/>
+            <div class="fig-cap"><strong>Stack & Heap</strong>Reference variables live on the Stack; the actual objects they point to live on the Heap. When <code>B b1 = new B()</code> is called, the reference <code>b1</code> (address #5) goes on the Stack; the <code>B</code> object is allocated at that address on the Heap.</div>
+          </div>
+        </div>
+
+        <h3>this vs base Keywords</h3>
+        <table class="cmp-table">
+          <tr><th>Keyword</th><th>Usage</th></tr>
+          <tr><td><code>this</code></td><td>Refers to members of the <em>current</em> class</td></tr>
+          <tr><td><code>this()</code></td><td>Calls another constructor in the <em>same</em> class</td></tr>
+          <tr><td><code>base</code></td><td>Refers to members of the <em>base/parent</em> class</td></tr>
+          <tr><td><code>base()</code></td><td>Calls the <em>base class</em> constructor</td></tr>
+        </table>
+
+        <h3>Type Casting with Inheritance</h3>
+        <h4>Implicit (Upcasting) — Safe</h4>
+        <p>A base class reference can point to a derived class instance. This is always safe.</p>
+        <pre><code>BaseClass b = new DerivedClass();  // valid ✓
+// b can only access BaseClass members — DerivedClass-specific members are hidden</code></pre>
+
+        <h4>Explicit (Downcasting) — Unsafe</h4>
+        <p>A derived class reference cannot point to a base class instance — the base may not have all the members the derived reference expects.</p>
+        <pre><code>DerivedClass d = new BaseClass();  // NOT valid ✗
+// Derived reference expects derived members, but base instance doesn't have them
+
+// Safe downcast using 'as' keyword:
+TV tv = device as TV;   // returns null if device is not a TV (no exception thrown)
+
+// Type check with 'is' keyword:
+if (device is TV) { Debug.Log("device is a TV"); }</code></pre>
+
+        <h3>Why MonoBehaviour Scripts are Components</h3>
+        <div class="callout">MonoBehaviour → Behaviour → Component → Object. Every script extending MonoBehaviour is a Component and can therefore be attached to a GameObject. A class that does not extend MonoBehaviour cannot be attached to a GameObject.</div>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 6 — POLYMORPHISM
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s6">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🔁</div>
+        <div class="sec-meta">
+          <h2>Polymorphism</h2>
+          <div class="sec-desc">Virtual, override, abstract, method hiding, function overloading</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Two Types of Polymorphism</h3>
+        <table class="cmp-table">
+          <tr><th>Type</th><th>Resolved at</th><th>Achieved by</th></tr>
+          <tr><td>Static (Compile-time)</td><td>Compile time</td><td>Function Overloading, Operator Overloading</td></tr>
+          <tr><td>Dynamic (Runtime)</td><td>Runtime</td><td>Function Overriding (virtual / override)</td></tr>
+        </table>
+
+        <h3>Virtual vs Abstract Methods</h3>
+        <table class="cmp-table">
+          <tr><th></th><th>Virtual Method</th><th>Abstract Method</th></tr>
+          <tr><td>Has body?</td><td>✅ Yes — implementation required</td><td>❌ No — only signature + semicolon</td></tr>
+          <tr><td>Must override?</td><td>❌ Optional — can use base as-is</td><td>✅ Mandatory in every concrete subclass</td></tr>
+          <tr><td>Where defined?</td><td>Concrete or abstract class</td><td>Abstract class only</td></tr>
+          <tr><td>Call base.Method()?</td><td>✅ Yes — base implementation runs</td><td>❌ No — no base implementation exists</td></tr>
+          <tr><td>Also called</td><td>—</td><td>Pure virtual method</td></tr>
+        </table>
+
+        <h3>Method Overriding — virtual / override</h3>
+        <pre><code>class Device {
+    public virtual void SwitchOn() {
+        Debug.Log("Device switched on");
+    }
+}
+
+class TV : Device {
+    public override void SwitchOn() {
+        Debug.Log("TV switched on");  // replaces Device.SwitchOn()
+    }
+}
+
+class RemoteController {
+    public void SwitchOn(Device device) {
+        device.SwitchOn();  // calls TV.SwitchOn() at runtime if device is a TV
+    }
+}</code></pre>
+
+        <h3>Method Hiding (new keyword)</h3>
+        <p>Method hiding uses the <code>new</code> keyword to define a same-named method in a derived class that <em>hides</em> — rather than overrides — the base version. Unlike overriding, the base class method is still called when accessed through a base class reference.</p>
+        <pre><code>class B : A {
+    public new int x = 20;  // hides A.x, does not override it
+}</code></pre>
+
+        <h3>Function Overloading</h3>
+        <p>Multiple methods sharing the same name but with different parameter signatures in the same class. Resolved at <strong>compile time</strong>.</p>
+        <pre><code>void Attack(int damage) { }
+void Attack(int damage, float range) { }
+void Attack(string weaponType) { }</code></pre>
+
+        <h3>Sealed, Abstract & Static Classes</h3>
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/abstract-sealed-static.png" alt="Abstract, Sealed, Static class comparison table" loading="lazy"/>
+            <div class="fig-cap"><strong>Abstract / Sealed / Static Comparison</strong>Abstract = partially implemented, must be inherited. Sealed = fully implemented, cannot be inherited. Static = utility class, no instances.</div>
+          </div>
+          <div class="fig fig-full">
+            <img src="images/abstract-vs-sealed.png" alt="Abstract vs Sealed class detailed notes" loading="lazy"/>
+            <div class="fig-cap"><strong>Abstract vs Sealed — Detail</strong>Abstract classes hold the contract; all abstract methods must be implemented in concrete subclasses. Failure to provide an implementation makes the subclass abstract too.</div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 7 — ACCESS MODIFIERS
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s7">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🔐</div>
+        <div class="sec-meta">
+          <h2>Access Modifiers</h2>
+          <div class="sec-desc">private, protected, internal, internal protected, public</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Access Modifier Summary</h3>
+        <p>Access modifiers control where class members can be read or modified. From most to least restrictive:</p>
+
+        <table class="access-table">
+          <tr>
+            <th>Modifier</th><th>Same Class</th><th>Derived Class<br>(same assembly)</th>
+            <th>Same Assembly</th><th>Derived Class<br>(other assembly)</th><th>Other Assembly</th>
+          </tr>
+          <tr><td>private</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+          <tr><td>protected</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+          <tr><td>internal</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+          <tr><td>internal protected</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>public</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        </table>
+
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/access-modifiers.png" alt="Access modifiers colour-coded diagram" loading="lazy"/>
+            <div class="fig-cap"><strong>Access Modifiers</strong>private (class level) → protected (hierarchy level) → internal (assembly level) → internal protected (inter-assembly hierarchy) → public (project level, most permissive).</div>
+          </div>
+          <div class="fig fig-full">
+            <img src="images/access-levels.png" alt="Access levels — Project, Assembly, File diagram" loading="lazy"/>
+            <div class="fig-cap"><strong>Access Level Scope Diagram</strong>Shows the nested containment: Project contains Assemblies; Assemblies contain Files; each modifier's reach is illustrated by colour-coded arrows across assemblies.</div>
+          </div>
+        </div>
+
+        <h4>Quick memory aid</h4>
+        <ul>
+          <li><code>private</code> — class level access (default, least permissive)</li>
+          <li><code>protected</code> — hierarchy level access (class + all subclasses)</li>
+          <li><code>internal</code> — assembly level access (same DLL/EXE)</li>
+          <li><code>internal protected</code> — inter-assembly level (assembly + subclasses in other assemblies)</li>
+          <li><code>public</code> — project level access (everywhere, most permissive)</li>
+        </ul>
+
+      </div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 8 — INTERFACE vs ABSTRACT
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s8">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🧩</div>
+        <div class="sec-meta">
+          <h2>Interface vs Abstract Class</h2>
+          <div class="sec-desc">Pure abstract vs partial abstract, when to use each</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Side-by-Side Comparison</h3>
+        <div class="figs-grid">
+          <div class="fig fig-full">
+            <img src="images/interface-vs-abstract.png" alt="Interface vs Abstract Class comparison table" loading="lazy"/>
+            <div class="fig-cap"><strong>Interface vs Abstract Class</strong>Interface = pure abstract, fully unimplemented, all members public by default. Abstract Class = partially implemented, can have normal + abstract methods, requires access modifiers.</div>
+          </div>
+        </div>
+
+        <h3>Key Differences</h3>
+        <table class="cmp-table">
+          <tr><th></th><th>Interface</th><th>Abstract Class</th></tr>
+          <tr><td>Also known as</td><td>Pure abstract class</td><td>Partially abstract class</td></tr>
+          <tr><td>Declared with</td><td><code>interface</code> keyword, name prefixed with <code>I</code></td><td><code>abstract class</code> keywords</td></tr>
+          <tr><td>Fields / Constants</td><td>❌ Not allowed</td><td>✅ Allowed</td></tr>
+          <tr><td>Member access</td><td>All public by default — no modifiers needed</td><td>Must specify access modifiers</td></tr>
+          <tr><td>Method implementation</td><td>❌ None (all abstract by default)</td><td>✅ Can have normal, virtual, and abstract methods</td></tr>
+          <tr><td>Instantiation</td><td>❌ Cannot instantiate</td><td>❌ Cannot instantiate</td></tr>
+          <tr><td>Inheritance</td><td>Can inherit from other interfaces only</td><td>Can inherit from classes and interfaces</td></tr>
+          <tr><td>Multiple inheritance</td><td>✅ A class can implement multiple interfaces</td><td>❌ A class can only extend one abstract class</td></tr>
+          <tr><td>Relationship type</td><td>"able to" / "can do" relationship</td><td>"is a" relationship</td></tr>
+          <tr><td>Adding new methods</td><td>Requires changes in all implementing classes</td><td>Can add methods with default implementations</td></tr>
+        </table>
+
+        <h3>When to Use Each</h3>
+        <h4>Use an Interface when:</h4>
+        <ul>
+          <li>You want to define a <strong>contract</strong> that unrelated classes can implement (e.g., <code>IDamageable</code> can apply to players, enemies, and destructible objects)</li>
+          <li>You need <strong>multiple inheritance</strong> — a class can implement many interfaces</li>
+          <li>You want <strong>full flexibility</strong> — any class can "opt in" to the interface regardless of its position in the hierarchy</li>
+        </ul>
+        <h4>Use an Abstract Class when:</h4>
+        <ul>
+          <li>You want to share <strong>common implementation</strong> across a family of related classes</li>
+          <li>Classes in your hierarchy have an <strong>"is a"</strong> relationship (a <code>Dog</code> is an <code>Animal</code>)</li>
+          <li>You want to provide <strong>default behaviour</strong> that subclasses can optionally override</li>
+        </ul>
+
+      </div></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="page-footer">Rathinasamy Arulappan · Learnings · Unity 3D Study Notes · June 2017</div>
+
+<script>
+  function toggle(header) {
+    header.closest('.section-card').classList.toggle('open');
+    syncToc();
+  }
+
+  function jumpTo(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.classList.contains('open')) el.classList.add('open');
+    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    syncToc(id);
+  }
+
+  function syncToc(activeId) {
+    const map = { s1:0, s2:1, s3:2, s4:3, s5:4, s6:5, s7:6, s8:7 };
+    document.querySelectorAll('.toc-item').forEach(t => t.classList.remove('active'));
+    if (activeId && map[activeId] !== undefined)
+      document.querySelectorAll('.toc-item')[map[activeId]].classList.add('active');
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) syncToc(e.target.id); });
+  }, { threshold: 0.2 });
+  ['s1','s2','s3','s4','s5','s6','s7','s8'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+</script>
+</body>
+</html>
