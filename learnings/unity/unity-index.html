@@ -146,6 +146,7 @@
       <a class="toc-item" onclick="jumpTo('s6')">🔁 Polymorphism</a>
       <a class="toc-item" onclick="jumpTo('s7')">🔐 Access Modifiers</a>
       <a class="toc-item" onclick="jumpTo('s8')">🧩 Interfaces & Abstract</a>
+      <a class="toc-item" onclick="jumpTo('s9')">🎯 Interview Questions</a>
     </div>
   </aside>
 
@@ -670,6 +671,254 @@ void Attack(string weaponType) { }</code></pre>
       </div></div>
     </div>
 
+    <!-- ══════════════════════════════════════
+         SECTION 9 — INTERVIEW QUESTIONS
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="s9">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🎯</div>
+        <div class="sec-meta">
+          <h2>Interview Questions & Prep</h2>
+          <div class="sec-desc">Basic · Unity Engine · Performance · Design Patterns · 3D Math</div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <div class="callout">These questions are drawn from real Unity developer interview prep material — covering fundamentals, engine-specific concepts, performance, and design patterns.</div>
+
+        <!-- ─── BASIC Q&A ─── -->
+        <h3>Basic Questions</h3>
+
+        <h4>Q1. What are the core OOP concepts?</h4>
+        <p><strong>A:</strong> Abstraction, Encapsulation, Inheritance, Polymorphism.</p>
+
+        <h4>Q2. Why should vectors be normalised when used to move an object?</h4>
+        <p><strong>A:</strong> Normalisation makes the vector unit-length (magnitude = 1). If you multiply a speed value by a normalised direction vector, you get exactly that speed per step. With an unnormalised vector the step size would vary unpredictably based on the vector's arbitrary length.</p>
+
+        <h4>Q3. What is a vertex shader vs a pixel shader?</h4>
+        <ul>
+          <li><strong>Vertex shader</strong> — runs once per mesh vertex. Controls where each vertex is in 3D space and how it projects to screen. Used for transformations, skinning, and custom positioning.</li>
+          <li><strong>Pixel (fragment) shader</strong> — runs once per pixel candidate after triangles are rasterised. Uses UV coordinates and textures to determine the final rendered colour of each pixel.</li>
+        </ul>
+
+        <h4>Q4. Can two GameObjects with only a SphereCollider (both set as Trigger) raise OnTrigger events?</h4>
+        <p><strong>A: No.</strong> Collision and trigger events require at least <strong>one of the objects to have a Rigidbody</strong>. This is a common bug when implementing physics-based interactions.</p>
+
+        <h4>Q5. Why should you use <code>Time.deltaTime</code> for time-dependent operations?</h4>
+        <p><strong>A:</strong> Real-time applications have variable FPS — a frame can run at 60fps or drop to 30fps. Without <code>deltaTime</code>, the same code would run faster on high-FPS machines. By multiplying with <code>Time.deltaTime</code> (the duration of the last frame in seconds), you make movement and transitions <strong>frame-rate independent</strong>:</p>
+        <pre><code>// Wrong — speed varies with FPS
+transform.position += direction * speed;
+
+// Correct — consistent regardless of FPS
+transform.position += direction * speed * Time.deltaTime;</code></pre>
+
+        <h4>Q6. Which runs faster — 1,000 GameObjects each with a MonoBehaviour Update(), or one MonoBehaviour managing an array of 1,000 custom Update() calls?</h4>
+        <p><strong>A: Option 2 — one MonoBehaviour.</strong> Unity's <code>Update()</code> callback is invoked via C# Reflection, which is significantly slower than a direct method call. 1,000 GameObjects means 1,000 reflection calls per frame. A single MonoBehaviour calling 1,000 methods directly is far more efficient.</p>
+
+        <h4>Q7. Raycasting — how do you target a specific layer, or exclude one layer?</h4>
+        <pre><code>// Target ONLY layer 10
+int layerMask = 1 << 10;
+Physics.Raycast(origin, direction, distance, layerMask);
+
+// Hit EVERYTHING EXCEPT layer 10
+int layerMask = ~(1 << 10);
+Physics.Raycast(origin, direction, distance, layerMask);</code></pre>
+        <p>Always use bit-shifting (<code>1 &lt;&lt; layerIndex</code>), not the raw layer index number.</p>
+
+        <h4>Q8. Box Collider vs Mesh Collider — which performs better?</h4>
+        <p><strong>A:</strong> They perform equally if the mesh collider has the same vertex/face count as the box. If the mesh collider has more vertices and faces than the box (which is usual for complex meshes), the <strong>Box Collider will outperform</strong> it because collision checks are cheaper against a simple shape.</p>
+
+        <h4>Q9. Unity lifecycle order when the application closes?</h4>
+        <pre><code>Awake()
+OnEnable()
+Start()
+Update()
+LateUpdate()
+OnGUI()
+OnApplicationQuit()
+OnDisable()
+OnDestroy()</code></pre>
+
+        <h4>Q10. How do you hide a GameObject in Unity?</h4>
+        <pre><code>gameObject.SetActive(false);</code></pre>
+
+        <!-- ─── UNITY ENGINE SPECIFIC ─── -->
+        <h3>Unity Engine Specific</h3>
+
+        <h4>Update vs FixedUpdate vs LateUpdate</h4>
+        <table class="cmp-table">
+          <tr><th>Method</th><th>Called</th><th>Use for</th></tr>
+          <tr><td><code>Update()</code></td><td>Every frame (variable rate)</td><td>Input, game logic, non-physics movement</td></tr>
+          <tr><td><code>FixedUpdate()</code></td><td>Fixed timestep (default 0.02s)</td><td>Physics, Rigidbody forces — frame-rate independent</td></tr>
+          <tr><td><code>LateUpdate()</code></td><td>Every frame, after all Update() calls</td><td>Camera follow, post-update logic</td></tr>
+        </table>
+
+        <h4>What are Prefabs?</h4>
+        <p>A <strong>Prefab</strong> is a pre-fabricated reusable GameObject template (a class combining objects and scripts). At design time, prefabs can be dragged from the Project window into the scene. At runtime, scripts can instantiate new copies via <code>Instantiate()</code> at any position and rotation.</p>
+
+        <h4>What is an AssetBundle?</h4>
+        <p>An <strong>AssetBundle</strong> is an archive file that can be exported from Unity containing any assets you choose (textures, meshes, audio, scenes). They are designed for <strong>downloadable content</strong> — loading assets into a running application without shipping them in the initial build.</p>
+
+        <h4>Resources folder vs StreamingAssets folder</h4>
+        <table class="cmp-table">
+          <tr><th>Folder</th><th>Behaviour</th><th>Access</th></tr>
+          <tr><td>Resources/</td><td>Bundled into the build. Loaded with <code>Resources.Load()</code>.</td><td><code>Resources.Load("path/to/asset")</code></td></tr>
+          <tr><td>StreamingAssets/</td><td>Copied verbatim to the target device at build time. Not bundled/compressed.</td><td><code>Application.streamingAssetsPath + "/filename"</code></td></tr>
+        </table>
+        <p>Use <code>StreamingAssets</code> when you need direct file access (e.g., a video file, a custom binary format) and <code>Resources</code> for assets Unity should manage and compress.</p>
+
+        <h4>Destroy vs DestroyImmediate</h4>
+        <table class="cmp-table">
+          <tr><th>Method</th><th>When destroyed</th><th>Use in</th></tr>
+          <tr><td><code>Destroy(obj)</code></td><td>End of current frame (deferred)</td><td>Gameplay code (safe)</td></tr>
+          <tr><td><code>DestroyImmediate(obj)</code></td><td>Immediately, right now</td><td>Editor scripts only — never in runtime gameplay</td></tr>
+        </table>
+
+        <h4>Start vs Awake</h4>
+        <table class="cmp-table">
+          <tr><th>Method</th><th>Called when</th><th>Use for</th></tr>
+          <tr><td><code>Awake()</code></td><td>When the object is first loaded (even if disabled)</td><td>Self-initialisation, caching own components</td></tr>
+          <tr><td><code>Start()</code></td><td>Before the first frame Update, only if the object is active</td><td>Cross-object initialisation (all Awake()s have run)</td></tr>
+        </table>
+
+        <h4>Static vs Dynamic Batching</h4>
+        <table class="cmp-table">
+          <tr><th></th><th>Dynamic Batching</th><th>Static Batching</th></tr>
+          <tr><td>Objects</td><td>Moving objects (&lt; 900 vertex attributes)</td><td>Non-moving objects (mark as Static)</td></tr>
+          <tr><td>Memory</td><td>Lower memory use</td><td>Higher memory — pre-combines meshes</td></tr>
+          <tr><td>CPU cost</td><td>Some CPU overhead per frame</td><td>No per-frame CPU cost</td></tr>
+          <tr><td>Requirement</td><td>Same material, small mesh, no lightmap</td><td>Same material, object must be static</td></tr>
+        </table>
+
+        <h4>What is Occlusion Culling?</h4>
+        <p>Occlusion culling prevents Unity from rendering objects that are hidden behind other objects from the camera's viewpoint. Unlike frustum culling (objects outside the camera view), occlusion culling works for objects <em>inside</em> the view but fully blocked by geometry — reducing draw calls and GPU work.</p>
+
+        <h4>What is a Coroutine? Does it run on a new thread?</h4>
+        <p><strong>No — coroutines run on the main thread.</strong> A coroutine is a method that can pause its execution and resume later using <code>yield return</code>, allowing you to spread work across multiple frames without blocking. They are not multi-threaded; they are cooperative, single-threaded routines managed by Unity's engine loop.</p>
+        <pre><code>IEnumerator MyCoroutine() {
+    Debug.Log("Start");
+    yield return new WaitForSeconds(2f); // pause 2s, don't block
+    Debug.Log("After 2 seconds");
+}</code></pre>
+
+        <h4>What happens during Garbage Collection?</h4>
+        <p>When a heap variable goes out of scope, its memory is <strong>not immediately freed</strong>. The GC runs periodically and:</p>
+        <ol>
+          <li>Examines every object on the heap</li>
+          <li>Searches all current object references to find which heap objects are still in scope</li>
+          <li>Flags out-of-scope objects for deletion</li>
+          <li>Deallocates flagged objects and returns memory to the heap</li>
+        </ol>
+        <div class="note"><strong>Performance tip:</strong> GC runs cause frame spikes. Minimise heap allocations inside <code>Update()</code> — avoid <code>new</code>, string concatenation, boxing, and LINQ in hot code paths. Use object pooling instead of Instantiate/Destroy.</div>
+
+        <!-- ─── PERFORMANCE ─── -->
+        <h3>Performance & Optimisation</h3>
+
+        <h4>A game is lagging — how do you find the bottleneck?</h4>
+        <ol>
+          <li>Open Unity's <strong>Profiler</strong> (<code>Window → Analysis → Profiler</code>)</li>
+          <li>Identify whether the bottleneck is <strong>CPU</strong> or <strong>GPU</strong></li>
+          <li>If <strong>CPU-bound</strong>: optimise scripts — reduce Update() calls, use object pooling, avoid GC allocations</li>
+          <li>If <strong>GPU-bound</strong>: compress textures, reduce draw calls via batching, create texture atlases, combine meshes, use LODs</li>
+        </ol>
+
+        <h4>CPU vs GPU rendering responsibilities</h4>
+        <table class="cmp-table">
+          <tr><th>CPU</th><th>GPU</th></tr>
+          <tr><td>Frustum culling — determine what is visible</td><td>Execute vertex shaders per mesh vertex</td></tr>
+          <tr><td>Prepare draw calls and batches</td><td>Rasterise triangles into pixels</td></tr>
+          <tr><td>Send SetPass calls (material/shader state changes)</td><td>Execute fragment/pixel shaders</td></tr>
+          <tr><td>Sort and organise rendering commands</td><td>Output final pixel colours to framebuffer</td></tr>
+        </table>
+        <div class="callout">A <strong>draw call</strong> is a CPU instruction to the GPU to render one mesh. Minimising draw calls (through batching, atlasing, and instancing) is one of the most impactful performance optimisations.</div>
+
+        <h4>How to create a native video player on Android/iOS?</h4>
+        <ol>
+          <li>Create a wrapper class in Java (Android) or Objective-C (iOS) for video playback</li>
+          <li>Build a native <code>.so</code> file to render the video image sequence onto a texture</li>
+          <li>From Unity, pass the texture pointer to native code via JNI (Android)</li>
+          <li>The native layer renders each video frame onto the Unity texture in real time</li>
+        </ol>
+
+        <!-- ─── DESIGN PATTERNS ─── -->
+        <h3>Design Patterns in Unity</h3>
+        <p>Common patterns used in Unity game development:</p>
+
+        <h4>Observer Pattern (Events / Delegates)</h4>
+        <p>Allows objects to communicate without direct references. One <strong>subject/publisher</strong> raises events; any number of <strong>observers/subscribers</strong> listen and react independently.</p>
+        <pre><code>// Subject — raises an event
+public class Subject : MonoBehaviour {
+    public event System.Action ThingHappened;
+
+    void DoThing() {
+        ThingHappened?.Invoke(); // null-conditional — safe if no subscribers
+    }
+}
+
+// Observer — subscribes and reacts
+public class Observer : MonoBehaviour {
+    public Subject subject;
+
+    void Awake() {
+        subject.ThingHappened += OnThingHappened;
+    }
+
+    void OnDestroy() {
+        subject.ThingHappened -= OnThingHappened; // always unsubscribe!
+    }
+
+    void OnThingHappened() {
+        Debug.Log("Thing happened!");
+    }
+}</code></pre>
+        <div class="note"><strong>Always unsubscribe</strong> in <code>OnDestroy()</code> using <code>-=</code>. Failing to do so causes null reference errors when the subject raises the event after the observer has been destroyed.</div>
+
+        <p><strong>Common use cases:</strong> player death, enemy defeated, item picked up, level complete, UI updates, audio/VFX triggers.</p>
+
+        <h4>Singleton Pattern</h4>
+        <p>Restricts a class to a single instance and provides global access to it. Commonly used in Unity for managers (GameManager, AudioManager, etc.).</p>
+        <pre><code>public class GameManager : MonoBehaviour {
+    public static GameManager Instance { get; private set; }
+
+    void Awake() {
+        if (Instance != null && Instance != this) {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+}</code></pre>
+        <div class="note"><strong>Caution:</strong> Don't overuse Singletons — they create hidden global state and make testing harder. Prefer dependency injection or ScriptableObject-based events for loosely coupled systems.</div>
+
+        <h4>Other key patterns to know</h4>
+        <table class="cmp-table">
+          <tr><th>Pattern</th><th>Use case in Unity</th></tr>
+          <tr><td>Object Pooling</td><td>Reuse GameObjects (bullets, enemies) instead of Instantiate/Destroy — avoids GC spikes</td></tr>
+          <tr><td>State Pattern</td><td>Character states (Idle/Walk/Run/Attack) — each state owns its own enter/update/exit logic</td></tr>
+          <tr><td>Command Pattern</td><td>Input handling, undo/redo systems, replay systems</td></tr>
+          <tr><td>Factory Pattern</td><td>Centralised object creation with complex setup logic</td></tr>
+          <tr><td>MVC / MVP</td><td>Separating UI logic from game logic — keeping views and data independent</td></tr>
+        </table>
+
+        <!-- ─── JOB DESCRIPTION ─── -->
+        <h3>Job Description Reference</h3>
+        <p>Key technical skills commonly required for senior Unity roles:</p>
+        <ul>
+          <li>Runtime plugin development for Unity Player (Android / Windows)</li>
+          <li>Android NDK, Kotlin/Java, Gradle, Android Studio</li>
+          <li>AR development with ARCore and/or ARKit</li>
+          <li>Edit mode and Play mode unit testing in Unity</li>
+          <li>Performance profiling and on-device optimisation</li>
+          <li>TDD, SOLID principles, OO design patterns</li>
+          <li>XR devices: HoloLens, Oculus, Lenovo ThinkReality, Magic Leap, Gear VR</li>
+          <li>CI/CD: Jenkins / Bamboo, Infrastructure as Code</li>
+        </ul>
+
+      </div></div>
+    </div>
+
   </main>
 </div>
 
@@ -690,7 +939,7 @@ void Attack(string weaponType) { }</code></pre>
   }
 
   function syncToc(activeId) {
-    const map = { s1:0, s2:1, s3:2, s4:3, s5:4, s6:5, s7:6, s8:7 };
+    const map = { s1:0, s2:1, s3:2, s4:3, s5:4, s6:5, s7:6, s8:7, s9:8 };
     document.querySelectorAll('.toc-item').forEach(t => t.classList.remove('active'));
     if (activeId && map[activeId] !== undefined)
       document.querySelectorAll('.toc-item')[map[activeId]].classList.add('active');
@@ -699,7 +948,7 @@ void Attack(string weaponType) { }</code></pre>
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) syncToc(e.target.id); });
   }, { threshold: 0.2 });
-  ['s1','s2','s3','s4','s5','s6','s7','s8'].forEach(id => {
+  ['s1','s2','s3','s4','s5','s6','s7','s8','s9'].forEach(id => {
     const el = document.getElementById(id);
     if (el) obs.observe(el);
   });
