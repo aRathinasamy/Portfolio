@@ -147,67 +147,83 @@
         <div class="toggle-btn">+</div>
       </div>
       <div class="project-body"><div class="project-inner">
-        <p>Urban traffic simulation is traditionally built using large game engines or specialised simulation frameworks — powerful, but tightly coupled and hard to extend. This project explores a fundamentally different architecture.</p>
-        <div class="callout">"Can believable city traffic be simulated using a modular scene-driven architecture instead of a traditional centralised simulation loop?"</div>
-        <p>The result is a modular urban driving simulation built with <strong>NVIDIA Omniverse</strong> and <strong>Universal Scene Description (USD)</strong> — where vehicle behaviour, traffic control, and intersection logic each operate as independent components communicating through the scene itself.</p>
+
+        <p>Urban traffic simulation is usually built using large game engines or specialized simulation frameworks. While these systems are powerful, they often require tightly coupled modules, centralized simulation loops, and significant engineering effort to maintain.</p>
+        <p>While exploring NVIDIA Omniverse, I wanted to test a different approach.</p>
+
+        <div class="callout">"Can believable city traffic be simulated using a modular scene-driven architecture instead of a traditional engine-based simulation system?"</div>
+
+        <p>This question led to the development of a modular urban driving simulation built using <strong>NVIDIA Omniverse</strong> and <strong>Universal Scene Description (USD)</strong>. The result is a lightweight simulation environment where vehicle behavior, traffic control, and intersection logic are implemented as modular components interacting through scene data.</p>
+
+        <h3>Simulation Demo</h3>
+        <p>The video below shows the simulation environment in action.</p>
+        <div style="background:var(--teal-pale);border:1px dashed var(--teal);border-radius:var(--radius);padding:2rem;text-align:center;color:var(--muted);font-size:.82rem;margin:1rem 0">
+          🎬 <em>GIF / video placeholder — add your simulation demo here</em>
+        </div>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:.5rem">The environment and vehicle meshes used in the simulation were sourced from freely available models on Sketchfab to quickly prototype the scene.</p>
+
+        <h3>In the Simulation</h3>
+        <ul>
+          <li>Vehicles follow spline-based road networks</li>
+          <li>Traffic lights dynamically control vehicle flow</li>
+          <li>All-way stop intersections manage vehicle queues</li>
+          <li>Vehicles implement car-following behavior and adjust speed automatically</li>
+          <li>Randomized speed parameters create more natural traffic patterns</li>
+          <li>Multiple camera modes allow observation of the system</li>
+        </ul>
+        <p>Although the environment is relatively simple, the modular design allows the simulation to be extended easily.</p>
 
         <h3>Core Concept: Scene-Driven Simulation</h3>
-        <p>Rather than a centralised controller, the simulation uses USD as a live shared data layer:</p>
+        <p>A key design goal was to avoid building a centralized simulation engine. Instead, the simulation relies on <strong>USD as a live data layer</strong>.</p>
         <ul>
           <li>Scene objects publish their state through USD attributes</li>
-          <li>Behaviour scripts read those attributes and respond independently</li>
-          <li>No central simulation loop or controller is required</li>
+          <li>Behavior scripts read those attributes and respond accordingly</li>
+          <li>No central simulation controller is required</li>
         </ul>
-        <p>Traffic lights publish their signal state → vehicles read it to decide whether to stop → intersections maintain queue data that vehicles query. <strong>The scene is the configuration. The code is the behaviour.</strong></p>
-
-        <h3>What the Simulation Does</h3>
-        <ul>
-          <li>Vehicles follow spline-based road networks with car-following logic</li>
-          <li>Traffic lights dynamically control vehicle flow via USD state</li>
-          <li>All-way stop intersections manage vehicle queues and right-of-way</li>
-          <li>Randomised speed parameters create natural traffic variation</li>
-          <li>Multiple camera modes for observing the system</li>
-        </ul>
+        <p>For example: traffic lights publish their signal state → vehicles read it to decide whether to stop → intersections maintain queue data that vehicles query.</p>
+        <p><strong>The scene becomes the configuration. The code becomes the behavior.</strong></p>
 
         <h3>System Architecture</h3>
         <table>
           <tr><th>Component</th><th>Role</th></tr>
-          <tr><td><strong>VehicleController</strong></td><td>Spawns vehicles and manages the active pool</td></tr>
-          <tr><td><strong>Vehicle</strong></td><td>Path following, speed control, car-following, signal reaction</td></tr>
-          <tr><td><strong>TrafficLight</strong></td><td>Publishes signal state to USD scene for vehicles to read</td></tr>
-          <tr><td><strong>AllStopIntersection</strong></td><td>Maintains vehicle queue and manages right-of-way</td></tr>
+          <tr><td><strong>VehicleController</strong></td><td>Spawns vehicles and manages the active vehicle pool within the simulation</td></tr>
+          <tr><td><strong>Vehicle</strong></td><td>Path following, speed control, car-following logic, reaction to traffic lights and intersections</td></tr>
+          <tr><td><strong>TrafficLight</strong></td><td>Publishes the current signal state to the scene, allowing vehicles to react appropriately</td></tr>
+          <tr><td><strong>AllStopIntersection</strong></td><td>Maintains a queue of vehicles approaching the intersection and manages right-of-way logic</td></tr>
         </table>
+        <p>Each component is implemented as a <strong>BehaviorScript</strong> attached to a scene prim in Omniverse. Because each script operates independently and reads data from the scene, the system remains highly modular and extensible.</p>
 
-        <h3>Tech Stack</h3>
-        <table>
-          <tr><th>Component</th><th>Technology</th></tr>
-          <tr><td>Simulation Platform</td><td>NVIDIA Omniverse</td></tr>
-          <tr><td>Scene Description</td><td>USD (Universal Scene Description)</td></tr>
-          <tr><td>Scripting</td><td>Python (BehaviorScript)</td></tr>
-          <tr><td>Road Networks</td><td>Spline-based path system</td></tr>
-        </table>
-
-        <h3>Key Advantages</h3>
+        <h3>Advantages of a USD-Based Architecture</h3>
         <div class="features">
-          <div class="feat"><div class="feat-icon">🧩</div><h4>Modular Design</h4><p>Independent scripts per scene object — no central coordinator needed.</p></div>
-          <div class="feat"><div class="feat-icon">🗂️</div><h4>Scene-Driven Config</h4><p>Simulation parameters adjusted directly in the USD scene without code changes.</p></div>
-          <div class="feat"><div class="feat-icon">🔌</div><h4>Easy to Extend</h4><p>New behaviours added as new BehaviorScripts without touching existing components.</p></div>
-          <div class="feat"><div class="feat-icon">📡</div><h4>Synthetic Data Ready</h4><p>USD environments integrate naturally with AV perception data pipelines.</p></div>
+          <div class="feat"><div class="feat-icon">🧩</div><h4>Modular System Design</h4><p>Behavior is encapsulated in independent scripts attached to scene objects.</p></div>
+          <div class="feat"><div class="feat-icon">🗂️</div><h4>Scene-Driven Configuration</h4><p>Simulation parameters can be adjusted directly within the scene.</p></div>
+          <div class="feat"><div class="feat-icon">🔌</div><h4>Easy Extensibility</h4><p>New behaviors can be added without modifying existing components.</p></div>
+          <div class="feat"><div class="feat-icon">📡</div><h4>Synthetic Data Compatibility</h4><p>USD-based environments integrate naturally with simulation and data generation pipelines.</p></div>
         </div>
 
         <h3>Future Development</h3>
         <ul>
           <li>Autonomous ego vehicle with route planning</li>
-          <li>Distinct NPC behaviours — lane changes, overtaking</li>
-          <li>Pedestrian agents at crosswalks</li>
-          <li>Synthetic data generation for AV perception model training</li>
-          <li>Automatic OpenStreetMap → USD road network generation</li>
+          <li>Distinct NPC driving behaviors — lane changes and overtaking</li>
+          <li>Pedestrian agents interacting with crosswalks</li>
+          <li>Synthetic data generation for autonomous vehicle perception models</li>
+          <li>Automatic OpenStreetMap to USD road network generation</li>
         </ul>
+        <p>These additions would transform the system into a more complete urban mobility simulation platform.</p>
+
+        <h3>Conclusion</h3>
+        <p>This project demonstrates that scene-driven simulation using USD and Omniverse can be a powerful alternative to traditional engine-based traffic simulators. By allowing scene data to act as the communication layer between simulation components, the system becomes simpler, more modular, and easier to extend.</p>
+        <p>This approach opens interesting possibilities for building flexible simulation environments for robotics, autonomous vehicles, and digital twin applications.</p>
 
         <div class="project-links">
           <a class="plink primary" href="https://github.com/aRathinasamy/UrbanDrivingSimulation-NVIDIAOmniverse/" target="_blank">⭐ GitHub Repository</a>
           <a class="plink" href="https://arathinasamy.github.io/UrbanDrivingSimulation-NVIDIAOmniverse/" target="_blank">🔗 Project Page</a>
         </div>
+
+        <p style="font-size:.75rem;color:var(--muted);margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--line)">
+          <em>Assets & 3D Models: Some environment and vehicle assets were sourced from free models available on Sketchfab to quickly prototype the simulation environment.</em>
+        </p>
+
       </div></div>
     </div>
 

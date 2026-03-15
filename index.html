@@ -352,11 +352,25 @@ Placeholder for a future area of focus. Content coming once I'm ready to share.
             });
           }
 
-          // Remove markdown padding, inject HTML directly
-          contentEl.className = 'html-section';
-          contentEl.innerHTML = body;
+          // Derive base folder of the fetched HTML file
+          // e.g. 'work/selected-work.html' -> 'work/'
+          const baseFolder = cfg.file.includes('/')
+            ? cfg.file.substring(0, cfg.file.lastIndexOf('/') + 1)
+            : '';
 
-          // Re-run any <script> tags in the injected content
+          // Rewrite relative src/href so they resolve from the repo root.
+          // e.g. src="images/vf1.jpg" -> src="work/images/vf1.jpg"
+          // Skips absolute URLs (http/https/data) and root-relative paths (/).
+          const fixedBody = body.replace(
+            /(\s(?:src|href))="(?!https?:\/\/|\/|data:)([^"]+)"/gi,
+            (_, attr, path) => `${attr}="${baseFolder}${path}"`
+          );
+
+          // Inject the fixed HTML (no padding — the HTML page owns its layout)
+          contentEl.className = 'html-section';
+          contentEl.innerHTML = fixedBody;
+
+          // Re-execute any <script> blocks inside the injected content
           contentEl.querySelectorAll('script').forEach(old => {
             const s = document.createElement('script');
             s.textContent = old.textContent;
