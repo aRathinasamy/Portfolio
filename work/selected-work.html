@@ -110,6 +110,29 @@
       .shot-full{grid-column:1}
       .project-inner{padding:1.4rem}
     }
+  
+    /* ── CAROUSEL ── */
+    .carousel-wrap{position:relative;background:#0a0e1a;border-radius:var(--radius);overflow:hidden;margin:1.2rem 0;user-select:none}
+    .carousel-track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+    .carousel-slide{min-width:100%;position:relative}
+    .carousel-slide img{width:100%;display:block;height:auto;max-height:520px;object-fit:contain;background:#0a0e1a}
+    .carousel-cap{padding:.65rem 1rem;background:rgba(0,0,0,.6);color:rgba(255,255,255,.8);font-size:.72rem;line-height:1.5;min-height:44px}
+    .carousel-cap strong{color:#fff;display:block;font-size:.74rem;margin-bottom:.1rem}
+    .carousel-btn{
+      position:absolute;top:50%;transform:translateY(-50%);
+      width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+      background:rgba(255,255,255,.15);backdrop-filter:blur(4px);
+      color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+      transition:background .2s;z-index:10;
+    }
+    .carousel-btn:hover{background:rgba(255,255,255,.35)}
+    .carousel-prev{left:12px}
+    .carousel-next{right:12px}
+    .carousel-dots{display:flex;justify-content:center;gap:6px;padding:.6rem 0;background:#0a0e1a}
+    .carousel-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .2s;border:none}
+    .carousel-dot.active{background:#fff;transform:scale(1.3)}
+    .carousel-counter{position:absolute;top:10px;right:12px;background:rgba(0,0,0,.5);color:rgba(255,255,255,.8);font-size:.68rem;padding:.2rem .6rem;border-radius:10px;z-index:10}
+    .carousel-loading{color:rgba(255,255,255,.5);font-size:.8rem;padding:4rem;text-align:center}
   </style>
 </head>
 <body>
@@ -129,6 +152,7 @@
       <button class="nav-pill"        onclick="jumpTo('p3')"><span class="pill-num">03</span>Virtual Home Configurator</button>
       <button class="nav-pill"        onclick="jumpTo('p4')"><span class="pill-num">04</span>Design Your Jewelry</button>
       <button class="nav-pill"        onclick="jumpTo('p5')"><span class="pill-num">05</span>AR Meeting App</button>
+      <button class="nav-pill"        onclick="jumpTo('p6')"><span class="pill-num">06</span>Mobile Apps</button>
     </div>
   </aside>
 
@@ -520,6 +544,59 @@
       </div></div>
     </div>
 
+
+    <!-- PROJECT 6 — MOBILE APPS -->
+    <div class="project" id="p6">
+      <div class="project-header" onclick="toggle(this)">
+        <div class="project-num">06</div>
+        <div class="project-meta">
+          <h2>Mobile Apps — 3D Interactive Training</h2>
+          <div class="project-tags">
+            <span class="ptag">Unity 3D</span><span class="ptag">iOS / Android</span>
+            <span class="ptag">3D Visualisation</span><span class="ptag">Interactive Training</span>
+            <span class="ptag">Automotive</span>
+          </div>
+        </div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="project-body"><div class="project-inner">
+
+        <p>A collection of <strong>interactive 3D training and product visualisation mobile applications</strong> built for automotive clients. These apps allow sales teams, technicians and customers to explore complex mechanical assemblies in real time — rotating, exploding and annotating 3D components directly on a tablet or phone.</p>
+
+        <div class="callout">"Interactive 3D visualisation on mobile — turning complex automotive components into explorable, engaging learning experiences."</div>
+
+        <h3>Featured Applications</h3>
+        <ul>
+          <li><strong>Pinion Unit Assembly</strong> — interactive 3D bearing product explorer with assembled/exploded view toggle, annotated hotspots, and a 360° explore mode. Used for sales presentations and technician training.</li>
+          <li><strong>Automotive Systems Training App</strong> — 3D interactive modules covering Engine (4S Diesel, Turbocharger, Valve Mechanism), Transmission (Clutch Engagement/Disengagement), and Chassis (Electric Power Steering, Brakes &amp; Corner Module).</li>
+        </ul>
+
+        <h3>Tech Stack</h3>
+        <table>
+          <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+          <tr><td>Engine</td><td>Unity 3D</td><td>Real-time 3D rendering, animation, interaction</td></tr>
+          <tr><td>Language</td><td>C#</td><td>App logic, UI, state management</td></tr>
+          <tr><td>Platform</td><td>iOS &amp; Android</td><td>Mobile tablet and phone deployment</td></tr>
+          <tr><td>3D Assets</td><td>Custom asset pipeline</td><td>High-fidelity automotive component models</td></tr>
+          <tr><td>UI</td><td>Unity uGUI</td><td>Tab navigation, hotspots, toggle controls</td></tr>
+        </table>
+
+        <h3>Screenshot Gallery</h3>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Navigate through the screenshots using the arrows or dots below.</p>
+
+        <!-- CAROUSEL — images loaded from images/mobile/manifest.json -->
+        <div class="carousel-wrap" id="carousel-p6">
+          <div class="carousel-loading" id="carousel-loading-p6">Loading gallery…</div>
+          <div class="carousel-track" id="carousel-track-p6" style="display:none"></div>
+          <button class="carousel-btn carousel-prev" onclick="carouselMove('p6',-1)" style="display:none" id="carousel-prev-p6">&#8249;</button>
+          <button class="carousel-btn carousel-next" onclick="carouselMove('p6', 1)" style="display:none" id="carousel-next-p6">&#8250;</button>
+          <div class="carousel-counter" id="carousel-counter-p6" style="display:none"></div>
+        </div>
+        <div class="carousel-dots" id="carousel-dots-p6" style="display:none"></div>
+
+      </div></div>
+    </div>
+
   </main>
 </div>
 
@@ -538,7 +615,7 @@
     syncPills(id);
   }
   function syncPills(activeId) {
-    const map = { p1:0, p2:1, p3:2, p4:3, p5:4 };
+    const map = { p1:0, p2:1, p3:2, p4:3, p5:4, p6:5 };
     document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
     if (activeId && map[activeId] !== undefined)
       document.querySelectorAll('.nav-pill')[map[activeId]].classList.add('active');
@@ -546,7 +623,99 @@
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) syncPills(e.target.id); });
   }, { threshold: 0.25 });
-  ['p1','p2','p3','p4','p5'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+  ['p1','p2','p3','p4','p5','p6'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+
+  // ── CAROUSEL ────────────────────────────────────────────────
+  const carousels = {};
+
+  async function initCarousel(id, manifestPath) {
+    try {
+      const res = await fetch(manifestPath + '?v=' + Date.now());
+      if (!res.ok) throw new Error('manifest not found');
+      const data = await res.json();
+      const images = data.images || [];
+      if (!images.length) throw new Error('no images');
+
+      const baseDir = manifestPath.replace('manifest.json', '');
+      const track   = document.getElementById('carousel-track-' + id);
+      const dots    = document.getElementById('carousel-dots-' + id);
+      const loading = document.getElementById('carousel-loading-' + id);
+      const prevBtn = document.getElementById('carousel-prev-' + id);
+      const nextBtn = document.getElementById('carousel-next-' + id);
+      const counter = document.getElementById('carousel-counter-' + id);
+
+      // Build slides
+      images.forEach((item, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        slide.innerHTML = `
+          <img src="${baseDir}${item.file}" alt="${item.caption}" loading="lazy"/>
+          <div class="carousel-cap">${item.caption}</div>`;
+        track.appendChild(slide);
+
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => carouselGoTo(id, i);
+        dots.appendChild(dot);
+      });
+
+      carousels[id] = { current: 0, total: images.length };
+      updateCarousel(id);
+
+      loading.style.display = 'none';
+      track.style.display = 'flex';
+      prevBtn.style.display = 'flex';
+      nextBtn.style.display = 'flex';
+      counter.style.display = 'block';
+      dots.style.display = 'flex';
+
+    } catch(e) {
+      document.getElementById('carousel-loading-' + id).textContent = 'Could not load gallery. (' + e.message + ')';
+    }
+  }
+
+  function carouselMove(id, dir) {
+    const c = carousels[id];
+    if (!c) return;
+    c.current = (c.current + dir + c.total) % c.total;
+    updateCarousel(id);
+  }
+
+  function carouselGoTo(id, idx) {
+    if (carousels[id]) { carousels[id].current = idx; updateCarousel(id); }
+  }
+
+  function updateCarousel(id) {
+    const c = carousels[id];
+    const track   = document.getElementById('carousel-track-' + id);
+    const dots    = document.getElementById('carousel-dots-' + id);
+    const counter = document.getElementById('carousel-counter-' + id);
+    track.style.transform = `translateX(-${c.current * 100}%)`;
+    counter.textContent = (c.current + 1) + ' / ' + c.total;
+    dots.querySelectorAll('.carousel-dot').forEach((d,i) =>
+      d.classList.toggle('active', i === c.current));
+  }
+
+  // Init carousels when their project accordion opens
+  const _origToggle = window.toggle;
+  window.toggle = function(header) {
+    const project = header.closest('.project');
+    const wasOpen = project.classList.contains('open');
+    project.classList.toggle('open');
+    syncPills();
+    // Init carousel on first open
+    if (!wasOpen && project.id === 'p6' && !carousels['p6']) {
+      initCarousel('p6', 'images/mobile/manifest.json');
+    }
+  };
+
+  // Also init if p6 is open on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const p6 = document.getElementById('p6');
+    if (p6 && p6.classList.contains('open') && !carousels['p6']) {
+      initCarousel('p6', 'images/mobile/manifest.json');
+    }
+  });
 </script>
 </body>
 </html>

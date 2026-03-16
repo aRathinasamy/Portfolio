@@ -1,0 +1,14 @@
+{
+  "images": [
+    { "file": "picture1.jpg",  "caption": "Pinion Unit Assembly — Assembled view with cross-section showing bearing components" },
+    { "file": "picture2.jpg",  "caption": "Pinion Unit Assembly — Exploded view showing individual bearing components" },
+    { "file": "picture3.jpg",  "caption": "Pinion Unit — Annotated cross-section with interactive hotspot highlighting the pinion" },
+    { "file": "picture4.jpg",  "caption": "Vehicle context — Heavy duty truck 3D model showing the full vehicle assembly" },
+    { "file": "picture5.jpg",  "caption": "Electric Power Steering — 3D interactive chassis module visualisation" },
+    { "file": "picture6.jpg",  "caption": "Brakes and Corner Module — Transparent vehicle chassis with brake system highlighted" },
+    { "file": "picture7.jpg",  "caption": "Clutch Disengagement — Interactive transmission module showing clutch mechanism" },
+    { "file": "picture8.jpg",  "caption": "Working of 4S Diesel Engine — Animated engine cut-through showing piston operation" },
+    { "file": "picture9.jpg",  "caption": "Turbocharger — Interactive 3D section view showing exhaust flow and turbine" },
+    { "file": "picture10.jpg", "caption": "Valve Mechanism — Detailed 3D model showing valve train, timing belt and pistons" }
+  ]
+}
