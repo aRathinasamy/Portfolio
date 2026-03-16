@@ -626,19 +626,18 @@
   ['p1','p2','p3','p4','p5','p6'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
 
   // ── CAROUSEL ────────────────────────────────────────────────
-  const carousels = {};
+  // All carousel state on window.* so re-injection never causes const re-declaration errors
+  window._carousels = window._carousels || {};
 
-  async function initCarousel(id, manifestPath) {
+  window.initCarousel = async function(id, manifestPath) {
+    if (window._carousels[id]) return; // already loaded
     try {
       const res = await fetch(manifestPath + '?v=' + Date.now());
-      if (!res.ok) throw new Error('manifest not found');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const images = data.images || [];
-      if (!images.length) throw new Error('no images');
+      if (!images.length) throw new Error('no images in manifest');
 
-      // When injected into index.html, manifestPath = 'work/images/mobile/manifest.json'
-      // When opened directly,            manifestPath = 'images/mobile/manifest.json'
-      // Either way, replace() gives us the correct folder prefix
       const baseDir = manifestPath.replace('manifest.json', '');
       const track   = document.getElementById('carousel-track-' + id);
       const dots    = document.getElementById('carousel-dots-' + id);
@@ -647,81 +646,84 @@
       const nextBtn = document.getElementById('carousel-next-' + id);
       const counter = document.getElementById('carousel-counter-' + id);
 
-      // Build slides
       images.forEach((item, i) => {
         const slide = document.createElement('div');
         slide.className = 'carousel-slide';
-        slide.innerHTML = `
-          <img src="${baseDir}${item.file}" alt="${item.caption}" loading="lazy"/>
-          <div class="carousel-cap">${item.caption}</div>`;
+        slide.innerHTML =
+          '<img src="' + baseDir + item.file + '" alt="' + item.caption + '" loading="lazy"/>' +
+          '<div class="carousel-cap">' + item.caption + '</div>';
         track.appendChild(slide);
 
         const dot = document.createElement('button');
         dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-        dot.onclick = () => carouselGoTo(id, i);
+        dot.setAttribute('onclick', 'carouselGoTo("' + id + '",' + i + ')');
         dots.appendChild(dot);
       });
 
-      carousels[id] = { current: 0, total: images.length };
-      updateCarousel(id);
-
+      window._carousels[id] = { current: 0, total: images.length };
+      window.updateCarousel(id);
       loading.style.display = 'none';
-      track.style.display = 'flex';
+      track.style.display   = 'flex';
       prevBtn.style.display = 'flex';
       nextBtn.style.display = 'flex';
       counter.style.display = 'block';
-      dots.style.display = 'flex';
+      dots.style.display    = 'flex';
 
     } catch(e) {
-      document.getElementById('carousel-loading-' + id).textContent = 'Could not load gallery. (' + e.message + ')';
-    }
-  }
-
-  function carouselMove(id, dir) {
-    const c = carousels[id];
-    if (!c) return;
-    c.current = (c.current + dir + c.total) % c.total;
-    updateCarousel(id);
-  }
-
-  function carouselGoTo(id, idx) {
-    if (carousels[id]) { carousels[id].current = idx; updateCarousel(id); }
-  }
-
-  function updateCarousel(id) {
-    const c = carousels[id];
-    const track   = document.getElementById('carousel-track-' + id);
-    const dots    = document.getElementById('carousel-dots-' + id);
-    const counter = document.getElementById('carousel-counter-' + id);
-    track.style.transform = `translateX(-${c.current * 100}%)`;
-    counter.textContent = (c.current + 1) + ' / ' + c.total;
-    dots.querySelectorAll('.carousel-dot').forEach((d,i) =>
-      d.classList.toggle('active', i === c.current));
-  }
-
-  // Base path — 'work/' when injected into index.html, '' when opened directly
-  const _carouselBase = window.location.pathname.endsWith('selected-work.html') ? '' : 'work/';
-
-  // Init carousels when their project accordion opens
-  const _origToggle = window.toggle;
-  window.toggle = function(header) {
-    const project = header.closest('.project');
-    const wasOpen = project.classList.contains('open');
-    project.classList.toggle('open');
-    syncPills();
-    // Init carousel on first open
-    if (!wasOpen && project.id === 'p6' && !carousels['p6']) {
-      initCarousel('p6', _carouselBase + 'images/mobile/manifest.json');
+      const el = document.getElementById('carousel-loading-' + id);
+      if (el) el.textContent = 'Could not load gallery — ' + e.message;
     }
   };
 
-  // Also init if p6 is open on page load
-  document.addEventListener('DOMContentLoaded', () => {
+  window.carouselMove = function(id, dir) {
+    const c = window._carousels[id]; if (!c) return;
+    c.current = (c.current + dir + c.total) % c.total;
+    window.updateCarousel(id);
+  };
+
+  window.carouselGoTo = function(id, idx) {
+    if (window._carousels[id]) { window._carousels[id].current = idx; window.updateCarousel(id); }
+  };
+
+  window.updateCarousel = function(id) {
+    const c = window._carousels[id]; if (!c) return;
+    const track   = document.getElementById('carousel-track-' + id);
+    const dots    = document.getElementById('carousel-dots-' + id);
+    const counter = document.getElementById('carousel-counter-' + id);
+    if (track)   track.style.transform = 'translateX(-' + (c.current * 100) + '%)';
+    if (counter) counter.textContent = (c.current + 1) + ' / ' + c.total;
+    if (dots)    dots.querySelectorAll('.carousel-dot').forEach((d,i) =>
+      d.classList.toggle('active', i === c.current));
+  };
+
+  // Determine manifest base path — 'work/' when injected, '' when opened directly
+  if (window._carouselBase === undefined) {
+    window._carouselBase = window.location.pathname.endsWith('selected-work.html') ? '' : 'work/';
+  }
+
+  // Wrap toggle once to init carousel when p6 is opened
+  if (!window._carouselToggleWrapped) {
+    const _baseTgl = window.toggle;
+    window.toggle = function(header) {
+      const project = header.closest('.project');
+      const wasOpen = project.classList.contains('open');
+      if (typeof _baseTgl === 'function') _baseTgl(header);
+      else { project.classList.toggle('open'); if (window.syncPills) window.syncPills(); }
+      if (!wasOpen && project.id === 'p6') {
+        window.initCarousel('p6', window._carouselBase + 'images/mobile/manifest.json');
+      }
+    };
+    window._carouselToggleWrapped = true;
+  }
+
+  // Init immediately if p6 is already open (e.g. page reload or direct URL)
+  (function() {
     const p6 = document.getElementById('p6');
-    if (p6 && p6.classList.contains('open') && !carousels['p6']) {
-      initCarousel('p6', _carouselBase + 'images/mobile/manifest.json');
+    if (p6 && p6.classList.contains('open')) {
+      window.initCarousel('p6', window._carouselBase + 'images/mobile/manifest.json');
     }
-  });
+  })();
+
 </script>
 </body>
 </html>
