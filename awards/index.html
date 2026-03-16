@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Awards & Certifications — Rathinasamy Arulappan</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --teal:#216e8e;--teal-dark:#1b5e7b;--teal-pale:#e8f4f9;
+      --line:#c8dfe8;--text:#1a2e38;--muted:#607d8b;
+      --white:#fff;--bg:#f7fbfd;
+      --gold:#c9a84c;--gold-pale:#fdf8ec;--gold-line:#e8d8a0;
+      --serif:'DM Serif Display',Georgia,serif;
+      --sans:'DM Sans',sans-serif;
+      --radius:10px;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.7;padding:0 0 4rem}
+
+    /* PAGE HEADER */
+    .page-header{
+      background:linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 100%);
+      color:#fff;padding:3rem 4rem 2.5rem;
+    }
+    .page-header .eyebrow{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;opacity:.7;margin-bottom:.8rem}
+    .page-header h1{font-family:var(--serif);font-size:2.6rem;line-height:1.1;margin-bottom:.6rem}
+    .page-header p{font-size:.88rem;opacity:.75;max-width:560px}
+
+    /* BODY */
+    .body{max-width:960px;margin:0 auto;padding:3rem 2rem}
+
+    /* SECTION LABEL */
+    .section-label{
+      display:flex;align-items:center;gap:1rem;
+      margin:3rem 0 1.5rem;
+    }
+    .section-label h2{
+      font-family:var(--serif);font-size:1.8rem;color:var(--teal-dark);white-space:nowrap;
+    }
+    .section-label::after{
+      content:'';flex:1;height:1px;
+      background:linear-gradient(90deg,var(--line),transparent);
+    }
+    .section-label:first-child{margin-top:0}
+
+    /* AWARD CARD */
+    .award-card{
+      background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+      overflow:hidden;margin-bottom:1.5rem;
+      box-shadow:0 2px 16px rgba(27,94,123,.07);
+      display:grid;grid-template-columns:1fr 1.4fr;
+    }
+    .award-card.cert-card{
+      grid-template-columns:260px 1fr;
+    }
+    .award-img{
+      position:relative;overflow:hidden;background:#f0f0f0;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .award-img img{width:100%;height:100%;object-fit:cover;display:block}
+    .award-img.contain img{object-fit:contain;padding:1.5rem;background:var(--teal-pale)}
+    .award-info{padding:2rem 2.2rem;display:flex;flex-direction:column;justify-content:center}
+
+    /* BADGE */
+    .award-badge{
+      display:inline-flex;align-items:center;gap:.5rem;
+      padding:.3rem .9rem;border-radius:20px;font-size:.65rem;
+      font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      margin-bottom:1rem;width:fit-content;
+    }
+    .badge-gold{background:var(--gold-pale);color:#92650a;border:1px solid var(--gold-line)}
+    .badge-silver{background:#f5f5f5;color:#555;border:1px solid #ddd}
+    .badge-teal{background:var(--teal-pale);color:var(--teal-dark);border:1px solid var(--line)}
+
+    .award-info h3{
+      font-family:var(--serif);font-size:1.4rem;color:var(--text);
+      margin-bottom:.4rem;line-height:1.25;
+    }
+    .award-meta{
+      font-size:.76rem;color:var(--muted);margin-bottom:.9rem;
+      display:flex;flex-direction:column;gap:.2rem;
+    }
+    .award-meta span{display:flex;align-items:center;gap:.4rem}
+    .award-desc{font-size:.84rem;line-height:1.8;color:#3a4f58}
+    .award-desc strong{color:var(--text);font-weight:600}
+
+    /* CERT BADGE CARD (SAFe) */
+    .cert-badge-card{
+      background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+      padding:2rem 2.5rem;margin-bottom:1.5rem;
+      box-shadow:0 2px 16px rgba(27,94,123,.07);
+      display:flex;align-items:center;gap:2.5rem;
+    }
+    .cert-badge-card img{width:110px;height:110px;object-fit:contain;flex-shrink:0}
+    .cert-badge-info h3{
+      font-family:var(--serif);font-size:1.4rem;color:var(--text);margin-bottom:.3rem;
+    }
+    .cert-badge-info .cert-meta{font-size:.76rem;color:var(--muted);margin-bottom:.7rem;display:flex;flex-direction:column;gap:.2rem}
+    .cert-badge-info p{font-size:.83rem;line-height:1.8;color:#3a4f58}
+    .cert-link{
+      display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;
+      padding:.5rem 1.1rem;border-radius:var(--radius);font-size:.74rem;font-weight:500;
+      text-decoration:none;border:1.5px solid var(--teal);color:var(--teal);
+      transition:background .2s,color .2s;
+    }
+    .cert-link:hover{background:var(--teal);color:#fff}
+
+    /* UNITY AWARD CARD */
+    .unity-card{
+      background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
+      border:1px solid #2a2a4e;border-radius:var(--radius);
+      padding:2.2rem 2.5rem;margin-bottom:1.5rem;
+      box-shadow:0 4px 24px rgba(0,0,0,.2);
+      display:flex;align-items:flex-start;gap:2rem;
+    }
+    .unity-icon{font-size:3rem;flex-shrink:0;line-height:1}
+    .unity-info h3{
+      font-family:var(--serif);font-size:1.4rem;color:#fff;margin-bottom:.3rem;
+    }
+    .unity-meta{font-size:.74rem;color:rgba(255,255,255,.5);margin-bottom:.8rem;display:flex;flex-direction:column;gap:.2rem}
+    .unity-meta span{display:flex;align-items:center;gap:.4rem}
+    .unity-desc{font-size:.83rem;line-height:1.8;color:rgba(255,255,255,.75)}
+    .unity-badge{
+      display:inline-flex;align-items:center;gap:.4rem;
+      background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);
+      color:#c9a84c;padding:.3rem .9rem;border-radius:20px;
+      font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      margin-bottom:1rem;
+    }
+
+    /* FOOTER */
+    .page-footer{text-align:center;padding:2.5rem 2rem 1rem;font-size:.65rem;color:var(--muted);border-top:1px solid var(--line);margin-top:2.5rem}
+
+    @media(max-width:700px){
+      .page-header{padding:2rem 1.5rem}
+      .body{padding:2rem 1rem}
+      .award-card,.award-card.cert-card{grid-template-columns:1fr}
+      .award-img{height:220px}
+      .cert-badge-card{flex-direction:column;gap:1.2rem}
+      .unity-card{flex-direction:column;gap:1rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="eyebrow">Recognition</div>
+  <h1>Awards & Certifications</h1>
+  <p>Professional certifications, departmental awards, and industry recognition earned across 15+ years in XR and immersive technology.</p>
+</div>
+
+<div class="body">
+
+  <!-- ════════════════════════════
+       CERTIFICATIONS
+  ═════════════════════════════ -->
+  <div class="section-label"><h2>Certifications</h2></div>
+
+  <!-- SAFe 6 -->
+  <div class="cert-badge-card">
+    <img src="images/cert-safe6.png" alt="SAFe 6 Agilist badge"/>
+    <div class="cert-badge-info">
+      <div class="award-badge badge-teal">🎓 Certified</div>
+      <h3>Certified SAFe® 6 Agilist</h3>
+      <div class="cert-meta">
+        <span>🏢 Scaled Agile, Inc.</span>
+        <span>📅 Feb 2024 &nbsp;·&nbsp; Certificate ID: 94214486-7778</span>
+      </div>
+      <p>A Certified SAFe® 6 Agilist (SA) is a SAFe® Enterprise leadership professional who leads and sustains Lean-Agile transformations. Key areas of competency include applying Lean-Agile mindset and principles, releasing value through Agile Release Trains (ARTs), and building an Agile portfolio to align strategy with execution.</p>
+      <a class="cert-link" href="https://www.credly.com/badges/e30677ab-eb17-450a-ae1f-d87f13be53f4/linked_in" target="_blank">🔗 View on Credly</a>
+    </div>
+  </div>
+
+  <!-- Kubernetes AKS Bootcamp -->
+  <div class="award-card cert-card">
+    <div class="award-img">
+      <img src="images/cert-kubernetes.jpeg" alt="Kubernetes Unicorns AKS Bootcamp Certificate"/>
+    </div>
+    <div class="award-info">
+      <div class="award-badge badge-teal">🎓 Certificate of Achievement</div>
+      <h3>Kubernetes Unicorns AKS Bootcamp</h3>
+      <div class="award-meta">
+        <span>🏢 Mercedes-Benz Tech India (MBTI) · iTechSpire</span>
+        <span>📅 December 2023</span>
+        <span>🥉 3rd Place Winner</span>
+      </div>
+      <p class="award-desc">Awarded for winning <strong>third place</strong> in the Kubernetes Unicorns AKS Bootcamp — a competitive technical programme run by Mercedes-Benz Tech India's iTechSpire initiative (<em>Discover · Inspire · Ignite</em>), focused on Azure Kubernetes Service and cloud-native infrastructure.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       INDUSTRY RECOGNITION
+  ═════════════════════════════ -->
+  <div class="section-label"><h2>Industry Recognition</h2></div>
+
+  <!-- Unity Award Nominee -->
+  <div class="unity-card">
+    <div class="unity-icon">🏆</div>
+    <div class="unity-info">
+      <div class="unity-badge">🎮 Unity Awards 2021 — Nominee</div>
+      <h3>Unity Awards 2021 — AR Meeting Application</h3>
+      <div class="unity-meta">
+        <span>🏢 Mercedes-Benz AG</span>
+        <span>📅 2021 &nbsp;·&nbsp; 3 Years in Development (2018–2021)</span>
+      </div>
+      <p class="unity-desc">The internal Mercedes-Benz AG AR Meeting Application — built to revolutionise how distributed teams collaborate using an immersive 3D shared space — was nominated for the <strong style="color:#fff">Unity Awards 2021</strong>. One of the earliest enterprise Mixed Reality collaboration platforms deployed in productive use within automotive, years before the industry called it the Metaverse.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       MBRDI DEPARTMENTAL AWARDS
+  ═════════════════════════════ -->
+  <div class="section-label"><h2>MBRDI Departmental Awards</h2></div>
+
+  <!-- Bronze Star -->
+  <div class="award-card">
+    <div class="award-img">
+      <img src="images/award-bronze-star.jpeg" alt="MBRDI Bronze Star Departmental Award"/>
+    </div>
+    <div class="award-info">
+      <div class="award-badge badge-gold">⭐ Bronze Star Award</div>
+      <h3>Departmental Award — Bronze Star</h3>
+      <div class="award-meta">
+        <span>🏢 IT Department · Mercedes-Benz Research & Development India</span>
+        <span>📅 June 2022</span>
+        <span>👤 Appreciated by Saumya Narain &nbsp;·&nbsp; Core value: Pioneering Spirit</span>
+      </div>
+      <p class="award-desc">Recognised as the <strong>technical anchor for making a difference in the XR space</strong> by building the Streaming Solution in DAVIS with HoloLight — the first of its kind in Mercedes-Benz. Contributions to <strong>LetsMeet collaboration, screen sharing, and video sharing</strong> were cited as building blocks and inspiration for the team to push forward with confidence and energy.</p>
+    </div>
+  </div>
+
+  <!-- Team Award -->
+  <div class="award-card">
+    <div class="award-img">
+      <img src="images/award-team.jpeg" alt="MBRDI Team Departmental Award"/>
+    </div>
+    <div class="award-info">
+      <div class="award-badge badge-silver">🌟 Team Award</div>
+      <h3>Departmental Award — Team Award</h3>
+      <div class="award-meta">
+        <span>🏢 MBRDI · Mercedes-Benz Research & Development India</span>
+        <span>📅 December 2020</span>
+        <span>👤 Appreciated by Ramakrishna Jeedigunta &nbsp;·&nbsp; Core value: Driven to Win</span>
+      </div>
+      <p class="award-desc">Awarded for the drive the team demonstrated in: <strong>1.</strong> Delivering solutions to production — Crash template, AR Collaboration, VR4PDM; <strong>2.</strong> Being self-motivated and resilient in withstanding business challenges; <strong>3.</strong> Maintaining a never-give-up attitude through persistent business development with local R&amp;D.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">Rathinasamy Arulappan · Awards & Certifications</div>
+
+</body>
+</html>
