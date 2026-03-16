@@ -636,6 +636,9 @@
       const images = data.images || [];
       if (!images.length) throw new Error('no images');
 
+      // When injected into index.html, manifestPath = 'work/images/mobile/manifest.json'
+      // When opened directly,            manifestPath = 'images/mobile/manifest.json'
+      // Either way, replace() gives us the correct folder prefix
       const baseDir = manifestPath.replace('manifest.json', '');
       const track   = document.getElementById('carousel-track-' + id);
       const dots    = document.getElementById('carousel-dots-' + id);
@@ -696,6 +699,9 @@
       d.classList.toggle('active', i === c.current));
   }
 
+  // Base path — 'work/' when injected into index.html, '' when opened directly
+  const _carouselBase = window.location.pathname.endsWith('selected-work.html') ? '' : 'work/';
+
   // Init carousels when their project accordion opens
   const _origToggle = window.toggle;
   window.toggle = function(header) {
@@ -705,7 +711,7 @@
     syncPills();
     // Init carousel on first open
     if (!wasOpen && project.id === 'p6' && !carousels['p6']) {
-      initCarousel('p6', 'images/mobile/manifest.json');
+      initCarousel('p6', _carouselBase + 'images/mobile/manifest.json');
     }
   };
 
@@ -713,7 +719,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const p6 = document.getElementById('p6');
     if (p6 && p6.classList.contains('open') && !carousels['p6']) {
-      initCarousel('p6', 'images/mobile/manifest.json');
+      initCarousel('p6', _carouselBase + 'images/mobile/manifest.json');
     }
   });
 </script>
