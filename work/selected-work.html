@@ -646,61 +646,49 @@
   }, { threshold: 0.25 });
   ['p1','p2','p3','p4','p5','p6'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
 
-  // ── CAROUSEL (no fetch — images are hardcoded in HTML) ─────
+  // ── CAROUSEL ──────────────────────────────────────────────
   window._carousels = window._carousels || {};
 
-  // Init a carousel from already-rendered slides
-  window.initCarouselFromDOM = function(id) {
-    if (window._carousels[id]) return;
-    const track = document.getElementById('carousel-track-' + id);
-    if (!track) return;
-    const slides = track.querySelectorAll('.carousel-slide');
-    if (!slides.length) return;
-    window._carousels[id] = { current: 0, total: slides.length };
-    window.updateCarousel(id);
-  };
-
   window.carouselMove = function(id, dir) {
-    const c = window._carousels[id]; if (!c) return;
+    var c = window._carousels[id];
+    if (!c) { window.carouselInit(id); c = window._carousels[id]; }
+    if (!c) return;
     c.current = (c.current + dir + c.total) % c.total;
-    window.updateCarousel(id);
+    window.carouselUpdate(id);
   };
 
   window.carouselGoTo = function(id, idx) {
-    if (window._carousels[id]) { window._carousels[id].current = idx; window.updateCarousel(id); }
+    var c = window._carousels[id];
+    if (!c) { window.carouselInit(id); c = window._carousels[id]; }
+    if (!c) return;
+    c.current = idx;
+    window.carouselUpdate(id);
   };
 
-  window.updateCarousel = function(id) {
-    const c = window._carousels[id]; if (!c) return;
-    const track   = document.getElementById('carousel-track-' + id);
-    const dots    = document.getElementById('carousel-dots-' + id);
-    const counter = document.getElementById('carousel-counter-' + id);
+  window.carouselInit = function(id) {
+    var track = document.getElementById('carousel-track-' + id);
+    if (!track) return;
+    var slides = track.querySelectorAll('.carousel-slide');
+    if (!slides.length) return;
+    window._carousels[id] = { current: 0, total: slides.length };
+    window.carouselUpdate(id);
+  };
+
+  window.carouselUpdate = function(id) {
+    var c = window._carousels[id];
+    if (!c) return;
+    var track   = document.getElementById('carousel-track-' + id);
+    var dots    = document.getElementById('carousel-dots-' + id);
+    var counter = document.getElementById('carousel-counter-' + id);
     if (track)   track.style.transform = 'translateX(-' + (c.current * 100) + '%)';
     if (counter) counter.textContent = (c.current + 1) + ' / ' + c.total;
-    if (dots)    dots.querySelectorAll('.carousel-dot').forEach((d,i) =>
-      d.classList.toggle('active', i === c.current));
+    if (dots)    [].forEach.call(dots.querySelectorAll('.carousel-dot'), function(d, i) {
+      d.classList.toggle('active', i === c.current);
+    });
   };
 
-  // Wrap toggle once to init carousel when p6 is opened
-  if (!window._carouselToggleWrapped) {
-    const _baseTgl = window.toggle;
-    window.toggle = function(header) {
-      const project = header.closest('.project');
-      const wasOpen = project.classList.contains('open');
-      if (typeof _baseTgl === 'function') _baseTgl(header);
-      else { project.classList.toggle('open'); if (window.syncPills) window.syncPills(); }
-      if (!wasOpen && project.id === 'p6') {
-        window.initCarouselFromDOM('p6');
-      }
-    };
-    window._carouselToggleWrapped = true;
-  }
-
-  // Init immediately if p6 is already open
-  (function() {
-    const p6 = document.getElementById('p6');
-    if (p6 && p6.classList.contains('open')) window.initCarouselFromDOM('p6');
-  })();
+  // Init all carousels now — slides are already in the DOM
+  window.carouselInit('p6');
 
 </script>
 </body>
