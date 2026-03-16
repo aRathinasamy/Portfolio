@@ -584,15 +584,36 @@
         <h3>Screenshot Gallery</h3>
         <p style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Navigate through the screenshots using the arrows or dots below.</p>
 
-        <!-- CAROUSEL — images loaded from images/mobile/manifest.json -->
+        <!-- CAROUSEL — images hardcoded, no fetch required -->
         <div class="carousel-wrap" id="carousel-p6">
-          <div class="carousel-loading" id="carousel-loading-p6">Loading gallery…</div>
-          <div class="carousel-track" id="carousel-track-p6" style="display:none"></div>
-          <button class="carousel-btn carousel-prev" onclick="carouselMove('p6',-1)" style="display:none" id="carousel-prev-p6">&#8249;</button>
-          <button class="carousel-btn carousel-next" onclick="carouselMove('p6', 1)" style="display:none" id="carousel-next-p6">&#8250;</button>
-          <div class="carousel-counter" id="carousel-counter-p6" style="display:none"></div>
+          <div class="carousel-track" id="carousel-track-p6">
+            <div class="carousel-slide"><img src="images/mobile/picture1.jpg" alt="Pinion Unit Assembly — Assembled" loading="lazy"/><div class="carousel-cap"><strong>Pinion Unit Assembly — Assembled</strong>Cross-section view showing the bearing assembly with Assembled / Exploded toggle.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture2.jpg" alt="Pinion Unit Assembly — Exploded" loading="lazy"/><div class="carousel-cap"><strong>Pinion Unit Assembly — Exploded View</strong>Individual bearing components separated and displayed for training purposes.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture3.jpg" alt="Pinion — Annotated hotspot" loading="lazy"/><div class="carousel-cap"><strong>Interactive Hotspot</strong>Annotated cross-section with a tappable hotspot highlighting the pinion component.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture4.jpg" alt="Heavy duty truck 3D model" loading="lazy"/><div class="carousel-cap"><strong>Vehicle Context View</strong>Full heavy-duty truck 3D model with Solid / Transparent render toggle to show internal components.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture5.jpg" alt="Electric Power Steering" loading="lazy"/><div class="carousel-cap"><strong>Chassis — Electric Power Steering</strong>Interactive 3D steering assembly showing rack, column and wheel geometry.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture6.jpg" alt="Brakes and Corner Module" loading="lazy"/><div class="carousel-cap"><strong>Chassis — Brakes &amp; Corner Module</strong>Transparent vehicle chassis with brake lines, shock absorbers and callipers highlighted.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture7.jpg" alt="Clutch Disengagement" loading="lazy"/><div class="carousel-cap"><strong>Transmission — Clutch Disengagement</strong>Clutch mechanism with Disengagement / Engagement toggle and colour-coded component flow.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture8.jpg" alt="4S Diesel Engine" loading="lazy"/><div class="carousel-cap"><strong>Engine — Working of 4S Diesel Engine</strong>Animated cut-through showing piston operation, crankshaft and valve train in motion.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture9.jpg" alt="Turbocharger" loading="lazy"/><div class="carousel-cap"><strong>Engine — Turbocharger</strong>Interactive 3D section view showing exhaust flow, turbine and compressor stages.</div></div>
+            <div class="carousel-slide"><img src="images/mobile/picture10.jpg" alt="Valve Mechanism" loading="lazy"/><div class="carousel-cap"><strong>Engine — Valve Mechanism</strong>Detailed valve train, timing belt, camshaft and piston assembly rendered in 3D.</div></div>
+          </div>
+          <button class="carousel-btn carousel-prev" onclick="carouselMove('p6',-1)">&#8249;</button>
+          <button class="carousel-btn carousel-next" onclick="carouselMove('p6', 1)">&#8250;</button>
+          <div class="carousel-counter" id="carousel-counter-p6">1 / 10</div>
         </div>
-        <div class="carousel-dots" id="carousel-dots-p6" style="display:none"></div>
+        <div class="carousel-dots" id="carousel-dots-p6">
+          <button class="carousel-dot active" onclick="carouselGoTo('p6',0)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',1)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',2)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',3)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',4)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',5)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',6)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',7)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',8)"></button>
+          <button class="carousel-dot" onclick="carouselGoTo('p6',9)"></button>
+        </div>
 
       </div></div>
     </div>
@@ -625,54 +646,18 @@
   }, { threshold: 0.25 });
   ['p1','p2','p3','p4','p5','p6'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
 
-  // ── CAROUSEL ────────────────────────────────────────────────
-  // All carousel state on window.* so re-injection never causes const re-declaration errors
+  // ── CAROUSEL (no fetch — images are hardcoded in HTML) ─────
   window._carousels = window._carousels || {};
 
-  window.initCarousel = async function(id, manifestPath) {
-    if (window._carousels[id]) return; // already loaded
-    try {
-      const res = await fetch(manifestPath + '?v=' + Date.now());
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const images = data.images || [];
-      if (!images.length) throw new Error('no images in manifest');
-
-      const baseDir = manifestPath.replace('manifest.json', '');
-      const track   = document.getElementById('carousel-track-' + id);
-      const dots    = document.getElementById('carousel-dots-' + id);
-      const loading = document.getElementById('carousel-loading-' + id);
-      const prevBtn = document.getElementById('carousel-prev-' + id);
-      const nextBtn = document.getElementById('carousel-next-' + id);
-      const counter = document.getElementById('carousel-counter-' + id);
-
-      images.forEach((item, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'carousel-slide';
-        slide.innerHTML =
-          '<img src="' + baseDir + item.file + '" alt="' + item.caption + '" loading="lazy"/>' +
-          '<div class="carousel-cap">' + item.caption + '</div>';
-        track.appendChild(slide);
-
-        const dot = document.createElement('button');
-        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-        dot.setAttribute('onclick', 'carouselGoTo("' + id + '",' + i + ')');
-        dots.appendChild(dot);
-      });
-
-      window._carousels[id] = { current: 0, total: images.length };
-      window.updateCarousel(id);
-      loading.style.display = 'none';
-      track.style.display   = 'flex';
-      prevBtn.style.display = 'flex';
-      nextBtn.style.display = 'flex';
-      counter.style.display = 'block';
-      dots.style.display    = 'flex';
-
-    } catch(e) {
-      const el = document.getElementById('carousel-loading-' + id);
-      if (el) el.textContent = 'Could not load gallery — ' + e.message;
-    }
+  // Init a carousel from already-rendered slides
+  window.initCarouselFromDOM = function(id) {
+    if (window._carousels[id]) return;
+    const track = document.getElementById('carousel-track-' + id);
+    if (!track) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    if (!slides.length) return;
+    window._carousels[id] = { current: 0, total: slides.length };
+    window.updateCarousel(id);
   };
 
   window.carouselMove = function(id, dir) {
@@ -696,11 +681,6 @@
       d.classList.toggle('active', i === c.current));
   };
 
-  // Determine manifest base path — 'work/' when injected, '' when opened directly
-  if (window._carouselBase === undefined) {
-    window._carouselBase = window.location.pathname.endsWith('selected-work.html') ? '' : 'work/';
-  }
-
   // Wrap toggle once to init carousel when p6 is opened
   if (!window._carouselToggleWrapped) {
     const _baseTgl = window.toggle;
@@ -710,18 +690,16 @@
       if (typeof _baseTgl === 'function') _baseTgl(header);
       else { project.classList.toggle('open'); if (window.syncPills) window.syncPills(); }
       if (!wasOpen && project.id === 'p6') {
-        window.initCarousel('p6', window._carouselBase + 'images/mobile/manifest.json');
+        window.initCarouselFromDOM('p6');
       }
     };
     window._carouselToggleWrapped = true;
   }
 
-  // Init immediately if p6 is already open (e.g. page reload or direct URL)
+  // Init immediately if p6 is already open
   (function() {
     const p6 = document.getElementById('p6');
-    if (p6 && p6.classList.contains('open')) {
-      window.initCarousel('p6', window._carouselBase + 'images/mobile/manifest.json');
-    }
+    if (p6 && p6.classList.contains('open')) window.initCarouselFromDOM('p6');
   })();
 
 </script>
