@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ Study Notes — Rathinasamy Arulappan</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --teal:#216e8e;--teal-dark:#1b5e7b;--teal-pale:#e8f4f9;
+      --line:#c8dfe8;--text:#1a2e38;--muted:#607d8b;
+      --white:#fff;--bg:#f7fbfd;
+      --cpp:#00599c;--cpp-pale:#e8f0ff;--cpp-line:#b8d0f0;
+      --serif:'DM Serif Display',Georgia,serif;
+      --sans:'DM Sans',sans-serif;
+      --mono:'JetBrains Mono',monospace;
+      --radius:8px;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.7;padding:0 0 4rem}
+
+    /* PAGE HEADER */
+    .page-header{background:linear-gradient(135deg,#00304d 0%,#00599c 100%);color:#fff;padding:3rem 4rem 2.5rem}
+    .page-header .breadcrumb{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-bottom:.8rem}
+    .page-header .breadcrumb a{color:inherit;text-decoration:none;opacity:.8}
+    .page-header h1{font-family:var(--serif);font-size:2.6rem;line-height:1.1;margin-bottom:.5rem}
+    .page-header .meta{font-size:.82rem;opacity:.7;display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.5rem}
+
+    /* LAYOUT */
+    .layout{display:grid;grid-template-columns:220px 1fr;gap:0;max-width:1100px;margin:2.5rem auto 0;padding:0 1.5rem}
+
+    /* SIDEBAR TOC */
+    .sidebar{position:sticky;top:1.5rem;align-self:start;padding-right:1.5rem}
+    .sidebar h3{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+    .toc{display:flex;flex-direction:column;gap:.3rem}
+    .toc-item{padding:.5rem .9rem;border-radius:var(--radius);font-size:.76rem;cursor:pointer;border:1px solid transparent;color:var(--muted);transition:all .2s;text-decoration:none;display:block}
+    .toc-item:hover{background:var(--cpp-pale);color:var(--cpp);border-color:var(--cpp-line)}
+    .toc-item.active{background:var(--cpp);color:#fff}
+
+    /* SECTION CARD */
+    .content{min-width:0}
+    .section-card{background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;box-shadow:0 2px 12px rgba(0,89,156,.05)}
+    .sec-header{display:flex;align-items:center;gap:1.2rem;padding:1.3rem 1.8rem;cursor:pointer;border-bottom:1px solid transparent;transition:background .2s,border-color .2s;user-select:none}
+    .sec-header:hover{background:var(--cpp-pale)}
+    .section-card.open .sec-header{border-bottom-color:var(--line);background:var(--cpp-pale)}
+    .sec-icon{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:var(--cpp-pale);color:var(--cpp);border:1px solid var(--cpp-line);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .2s}
+    .section-card.open .sec-icon{background:var(--cpp);border-color:var(--cpp)}
+    .sec-meta{flex:1;min-width:0}
+    .sec-meta h2{font-family:var(--serif);font-size:1.2rem;color:var(--text);margin-bottom:.2rem;line-height:1.2}
+    .sec-meta .sec-desc{font-size:.75rem;color:var(--muted)}
+    .toggle-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--white);color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;line-height:1}
+    .section-card.open .toggle-btn{background:var(--cpp);border-color:var(--cpp);color:#fff;transform:rotate(45deg)}
+
+    /* ACCORDION BODY */
+    .sec-body{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(0,.85,.3,1)}
+    .section-card.open .sec-body{max-height:9999px}
+    .sec-inner{padding:2rem 2.2rem 2.5rem}
+
+    /* TYPOGRAPHY */
+    .sec-inner h3{font-family:var(--serif);font-size:1.4rem;color:#00304d;margin:2rem 0 .6rem;padding-bottom:.4rem;border-bottom:1px solid var(--cpp-line)}
+    .sec-inner h3:first-child{margin-top:0}
+    .sec-inner h4{font-size:.86rem;font-weight:600;color:var(--cpp);margin:1.3rem 0 .4rem}
+    .sec-inner p{font-size:.85rem;line-height:1.9;color:#3a4f58;margin-bottom:.8rem}
+    .sec-inner ul,.sec-inner ol{margin:.3rem 0 .9rem 1.4rem;font-size:.84rem;color:#3a4f58}
+    .sec-inner li{margin-bottom:.3rem;line-height:1.7}
+    .sec-inner strong{font-weight:600;color:var(--text)}
+
+    /* CALLOUT */
+    .callout{background:var(--cpp-pale);border-left:3px solid var(--cpp);padding:.9rem 1.2rem;border-radius:0 var(--radius) var(--radius) 0;margin:1rem 0;font-size:.84rem;font-style:italic;color:#00304d}
+    .note{background:#fffbeb;border-left:3px solid #f59e0b;padding:.8rem 1.1rem;border-radius:0 var(--radius) var(--radius) 0;margin:1rem 0;font-size:.8rem;color:#78350f}
+    .note strong{color:#92400e}
+    .warn{background:#fff0f0;border-left:3px solid #ef4444;padding:.8rem 1.1rem;border-radius:0 var(--radius) var(--radius) 0;margin:1rem 0;font-size:.8rem;color:#7f1d1d}
+
+    /* CODE */
+    .sec-inner code{background:var(--cpp-pale);color:#003d70;padding:.12em .4em;border-radius:4px;font-family:var(--mono);font-size:.78em}
+    pre{background:#001e3c;color:#a8d8ea;padding:1.2rem 1.4rem;border-radius:var(--radius);overflow-x:auto;margin:1rem 0;font-family:var(--mono);font-size:.76rem;line-height:1.8}
+    pre code{background:none;color:inherit;padding:0;font-size:inherit}
+    .kw{color:#79c0ff}  /* keyword */
+    .cm{color:#8b949e}  /* comment */
+    .st{color:#a5d6ff}  /* string */
+    .ty{color:#ffa657}  /* type */
+    .fn{color:#d2a8ff}  /* function */
+
+    /* TABLE */
+    .cmp-table{width:100%;border-collapse:collapse;font-size:.81rem;margin:1rem 0}
+    .cmp-table th{background:var(--cpp-pale);color:#00304d;padding:.55rem .9rem;text-align:left;font-weight:600;border-bottom:2px solid var(--cpp-line)}
+    .cmp-table td{padding:.55rem .9rem;border-bottom:1px solid var(--cpp-pale);color:var(--text);vertical-align:top}
+    .cmp-table td:first-child{font-weight:600;color:var(--cpp);font-family:var(--mono);font-size:.78rem}
+
+    /* QA SECTION */
+    .qa-item{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);margin:.8rem 0;overflow:hidden}
+    .qa-q{padding:.8rem 1.1rem;cursor:pointer;font-size:.84rem;font-weight:500;color:#00304d;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+    .qa-q:hover{background:var(--cpp-pale)}
+    .qa-q::after{content:'▾';font-size:.8rem;color:var(--muted);flex-shrink:0;transition:transform .2s}
+    .qa-item.open .qa-q::after{transform:rotate(180deg)}
+    .qa-a{max-height:0;overflow:hidden;transition:max-height .4s ease}
+    .qa-item.open .qa-a{max-height:800px}
+    .qa-a-inner{padding:.8rem 1.1rem 1rem;font-size:.83rem;line-height:1.8;color:#3a4f58;border-top:1px solid var(--line)}
+    .qa-a-inner code{background:var(--cpp-pale);color:#003d70;padding:.1em .35em;border-radius:3px;font-family:var(--mono);font-size:.78em}
+
+    .page-footer{text-align:center;padding:2.5rem 2rem 1rem;font-size:.65rem;color:var(--muted);border-top:1px solid var(--line);margin-top:2.5rem}
+
+    @media(max-width:800px){
+      .page-header{padding:2rem 1.5rem}
+      .layout{grid-template-columns:1fr;padding:0 1rem}
+      .sidebar{position:static;padding-right:0;margin-bottom:1.5rem}
+      .toc{flex-direction:row;flex-wrap:wrap}
+      .sec-inner{padding:1.4rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="#">Learnings</a> / C++</div>
+  <h1>C++ — Study Notes</h1>
+  <div class="meta">
+    <span>C++ · OOP · Memory · Templates · STL</span>
+    <span>References · Pointers · Virtual Functions · Const Correctness</span>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Topics</h3>
+    <div class="toc">
+      <a class="toc-item active" onclick="jumpTo('s1')">📌 References & Pointers</a>
+      <a class="toc-item" onclick="jumpTo('s2')">⚖️ C vs C++</a>
+      <a class="toc-item" onclick="jumpTo('s3')">🏗️ OOP Concepts</a>
+      <a class="toc-item" onclick="jumpTo('s4')">🔨 Classes & Constructors</a>
+      <a class="toc-item" onclick="jumpTo('s5')">📋 Init Lists & Inline</a>
+      <a class="toc-item" onclick="jumpTo('s6')">🔒 Const Correctness</a>
+      <a class="toc-item" onclick="jumpTo('s7')">📦 Static Members</a>
+      <a class="toc-item" onclick="jumpTo('s8')">🤝 Friends</a>
+      <a class="toc-item" onclick="jumpTo('s9')">⚡ Virtual Functions</a>
+      <a class="toc-item" onclick="jumpTo('s10')">🎯 Interview Q&amp;A</a>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ═══════════════════════════════════
+         S1 — REFERENCES & POINTERS
+    ════════════════════════════════════ -->
+    <div class="section-card open" id="s1">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">📌</div>
+        <div class="sec-meta"><h2>References & Pointers</h2><div class="sec-desc">Aliases, referents, pass-by-ref, pointer vs reference</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>What is a Reference?</h3>
+        <p>A reference is an <strong>alternative name (alias) for an existing object</strong> — the referent. It is not a copy, not a new object; it is the referent itself accessed under a different name.</p>
+        <pre><code><span class="kw">int</span> i = 10;
+<span class="kw">int</span> &j = i;   <span class="cm">// j is a reference (alias) to i — i is the referent</span>
+j = 11;        <span class="cm">// both i and j are now 11 — same memory location</span></code></pre>
+
+        <h4>Two Forms of References</h4>
+        <ul>
+          <li><strong>Local reference</strong> — <code>int &j = i;</code> — alias within the same scope</li>
+          <li><strong>Parameter reference</strong> — <code>void swap(int &i, int &j)</code> — alias bound to an argument</li>
+        </ul>
+
+        <h4>Key Rules of References</h4>
+        <ul>
+          <li>A reference <strong>must be initialised at declaration</strong> — you cannot create an unbound reference</li>
+          <li>A reference <strong>cannot be rebound</strong> to a different referent after initialisation</li>
+          <li>Taking the address of a reference gives <strong>the same address as the referent</strong></li>
+          <li>Assigning a value to a reference <strong>changes the referent's value</strong></li>
+          <li><code>int& const x</code> — makes no sense; references are already implicitly const-bound</li>
+        </ul>
+
+        <h3>Pointers vs References</h3>
+        <table class="cmp-table">
+          <tr><th>Aspect</th><th>Pointer</th><th>Reference</th></tr>
+          <tr><td>Object creation</td><td>Creates a new object with its own operations (<code>*p</code>, <code>p-></code>)</td><td>No new object — just another name for the referent</td></tr>
+          <tr><td>Rebinding</td><td>Can point to a different object at any time</td><td>Cannot change referent once bound</td></tr>
+          <tr><td>Null value</td><td>Can be null (<code>nullptr</code>)</td><td>Must always refer to a valid object — null reference is illegal</td></tr>
+          <tr><td>Syntax</td><td>Requires dereferencing (<code>*p = 7</code>)</td><td>Used directly (<code>n = 7</code>)</td></tr>
+          <tr><td>Use when</td><td>Need to reassign or can be null</td><td>Prefer when no need to reset</td></tr>
+        </table>
+
+        <pre><code><span class="kw">int</span> k = 10;
+<span class="kw">int</span> &n = k;        <span class="cm">// n is a reference to k</span>
+<span class="kw">int</span> *p = &k;       <span class="cm">// p is a new pointer object pointing to k</span>
+n = 7;             <span class="cm">// changes k → k is now 7</span>
+p = <span class="kw">new</span> <span class="kw">int</span>(99);  <span class="cm">// p now points to a different object — n still refers to k</span></code></pre>
+
+        <h3>When to Use Each</h3>
+        <div class="callout">Prefer <strong>references</strong> when there is no need to reseat the value or support null. Use <strong>pointers</strong> when the target may change or may be null.</div>
+
+        <h4>Returning a Reference — Method Chaining</h4>
+        <p>Returning <code>*this</code> from a member function allows method chaining — each call returns the same object so the next call can be applied to it immediately.</p>
+        <pre><code><span class="cm">// cout << x << y; works because:</span>
+<span class="cm">// cout.operator<<(x) returns cout (by reference), then .operator<<(y) is called</span></code></pre>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S2 — C VS C++
+    ════════════════════════════════════ -->
+    <div class="section-card open" id="s2">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">⚖️</div>
+        <div class="sec-meta"><h2>C vs C++ — Key Differences</h2><div class="sec-desc">Paradigm, OOP, exceptions, overloading</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <table class="cmp-table">
+          <tr><th>Feature</th><th>C</th><th>C++</th></tr>
+          <tr><td>Paradigm</td><td>Procedural — functions only</td><td>Object-oriented — classes and objects</td></tr>
+          <tr><td>Data security</td><td>Data cannot be secured (no access control)</td><td>Member data can be secured with access modifiers</td></tr>
+          <tr><td>Structures</td><td>Functions cannot be defined inside structures</td><td>Functions (methods) can be defined inside structures</td></tr>
+          <tr><td>Exceptions</td><td>No exception handling mechanism</td><td>Full exception handling at runtime (<code>try</code>/<code>catch</code>/<code>throw</code>)</td></tr>
+          <tr><td>Overloading</td><td>Does not support function or operator overloading</td><td>Supports both function and operator overloading</td></tr>
+          <tr><td>References</td><td>Pointers only — no reference variables</td><td>Supports both pointers and reference variables</td></tr>
+        </table>
+
+        <div class="note"><strong>C is a low-level language</strong> — closer to hardware, direct memory access. <strong>C++ is a mid-level language</strong> — combines high-level OOP features with the low-level power of C.</div>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S3 — OOP CONCEPTS
+    ════════════════════════════════════ -->
+    <div class="section-card open" id="s3">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🏗️</div>
+        <div class="sec-meta"><h2>C++ OOP Concepts</h2><div class="sec-desc">Encapsulation, abstraction, polymorphism, inheritance, classes</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>The Four Pillars</h3>
+
+        <h4>Encapsulation</h4>
+        <p>Wrapping data members and the functions that operate on them into a single unit (the class). Access levels control who can read or modify the data — enforcing <strong>data security through information hiding</strong>.</p>
+        <pre><code><span class="kw">class</span> <span class="ty">Person</span> {
+<span class="kw">private</span>:
+    <span class="kw">char</span>* name;  <span class="cm">// hidden — only accessible via public methods</span>
+    <span class="kw">int</span> age;
+<span class="kw">public</span>:
+    <span class="kw">void</span> <span class="fn">setName</span>(<span class="kw">const char</span>*);
+    <span class="kw">char</span>* <span class="fn">getName</span>() <span class="kw">const</span>;
+};</code></pre>
+
+        <h4>Data Abstraction</h4>
+        <p>Representing only the essential information while hiding implementation details. The user of a class sees <em>what</em> it does, not <em>how</em>.</p>
+        <div class="callout">Example: <code>vector.size()</code> tells you the count of elements. You don't need to know how the count is tracked internally — that's abstraction.</div>
+
+        <h4>Polymorphism — "Many Forms"</h4>
+        <table class="cmp-table">
+          <tr><th>Type</th><th>Resolved at</th><th>Mechanism</th></tr>
+          <tr><td>Static (compile-time)</td><td>Compile time</td><td>Function overloading, operator overloading</td></tr>
+          <tr><td>Dynamic (runtime)</td><td>Runtime</td><td>Virtual functions, function overriding</td></tr>
+        </table>
+        <p>Example: A <code>Shape</code> class with a <code>draw()</code> function behaves differently depending on whether the object is a <code>Circle</code>, <code>Triangle</code> or <code>Rectangle</code>.</p>
+
+        <h4>Inheritance</h4>
+        <p>The mechanism of deriving a new class from an existing one — reusing and extending behaviour without modification.</p>
+        <ul>
+          <li>Represents an <strong>"is-a"</strong> relationship (<code>TV</code> is a <code>Device</code>)</li>
+          <li>Types: <strong>Single, Multiple, Multi-level</strong></li>
+          <li>Produces a hierarchical relationship — general at the top, specialised at the bottom</li>
+          <li>Promotes <strong>code reuse</strong> and <strong>extensibility</strong></li>
+        </ul>
+
+        <h3>Classes and Objects</h3>
+        <ul>
+          <li><strong>Class</strong> — a blueprint / template defining a new type and scope. Once defined, no new members can be added.</li>
+          <li><strong>Object</strong> — a runtime instance of a class; storage is allocated only when an object is defined, not when the class is defined.</li>
+          <li><strong>struct keyword</strong> — members before the first access label are <code>public</code> by default</li>
+          <li><strong>class keyword</strong> — members before the first access label are <code>private</code> by default</li>
+        </ul>
+
+        <div class="note"><strong>Size of an empty class:</strong> 1 byte — not zero. The C++ standard requires that no two distinct objects share the same memory address. To guarantee this, the compiler adds a dummy byte to any class with no data members and no virtual functions.</div>
+
+        <h4>this Pointer</h4>
+        <p>A hidden pointer inside every non-static member function pointing to the object on which the function was called. Used to return the current object by reference:</p>
+        <pre><code><span class="ty">example</span>& <span class="ty">example</span>::<span class="fn">memfunc</span>() {
+    <span class="cm">// ... do work ...</span>
+    <span class="kw">return</span> *<span class="kw">this</span>;  <span class="cm">// enables method chaining</span>
+}</code></pre>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S4 — CLASSES & CONSTRUCTORS
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s4">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🔨</div>
+        <div class="sec-meta"><h2>Classes, Constructors & Copy Control</h2><div class="sec-desc">Constructors, destructors, copy constructor, operator=, placement new</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Constructors</h3>
+        <p>A special member function with the same name as the class, called automatically by the compiler whenever an object is created. Used to initialise data members to sensible values.</p>
+        <ul>
+          <li>Constructors can be <strong>overloaded</strong> — multiple constructors with different signatures</li>
+          <li>A <strong>default constructor</strong> takes no arguments (or all arguments have default values)</li>
+          <li>Should not call another constructor as a primitive — use <code>init()</code> helper or default parameter values instead</li>
+        </ul>
+
+        <pre><code><span class="kw">class</span> <span class="ty">Example</span> {
+    <span class="kw">int</span> a;
+    std::string data;
+<span class="kw">public</span>:
+    <span class="fn">Example</span>() : a(0) {}               <span class="cm">// default constructor</span>
+    <span class="fn">Example</span>(<span class="kw">int</span> x) : a(x) {}           <span class="cm">// int overload</span>
+    <span class="fn">Example</span>(<span class="kw">const char</span>* s) : a(0), data(s) {} <span class="cm">// string overload</span>
+};</code></pre>
+
+        <h3>Destructors</h3>
+        <p>Called automatically when an object goes out of scope or is explicitly deleted. Used to release resources (heap memory, sockets, file handles).</p>
+        <ul>
+          <li>Derived class destructors are called first, then the base class destructor — reverse construction order</li>
+          <li><strong>Never call destructors explicitly</strong> unless using placement <code>new</code> (the only exception)</li>
+          <li>Do not call virtual functions inside constructors or destructors — the derived part may not yet exist or may already be destroyed</li>
+        </ul>
+
+        <div class="warn"><strong>Virtual destructors:</strong> Always declare the base class destructor as <code>virtual</code> when the class is designed to be inherited. Without it, deleting a derived object through a base pointer results in undefined behaviour — the derived destructor is never called.</div>
+
+        <pre><code><span class="kw">class</span> <span class="ty">Base</span> {
+<span class="kw">public</span>:
+    <span class="kw">virtual</span> ~<span class="fn">Base</span>() {}  <span class="cm">// virtual — ensures derived destructors are called</span>
+};
+<span class="ty">Base</span>* p = <span class="kw">new</span> <span class="ty">Derived</span>;
+<span class="kw">delete</span> p;  <span class="cm">// calls ~Derived() first, then ~Base() ✓</span></code></pre>
+
+        <h3>Copy Constructor</h3>
+        <p>Invoked when an object is copied — passed by value, returned by value, or explicitly copied. The compiler generates a default copy constructor that performs a <strong>shallow (bitwise) copy</strong>.</p>
+        <div class="warn"><strong>The pointer problem:</strong> If your class contains a raw pointer, the default copy constructor copies the pointer address — not the data it points to. Both objects then point to the same memory. When one destructor runs and frees that memory, the other object holds a <strong>dangling pointer</strong> — crash on next access or double-delete.</div>
+        <p><strong>Solution:</strong> Write your own copy constructor to perform a deep copy:</p>
+        <pre><code><span class="fn">test</span>(<span class="kw">const</span> <span class="ty">test</span>& t) {
+    val = <span class="kw">new int</span>(*(t.val));           <span class="cm">// deep copy — allocate new memory</span>
+    str = <span class="kw">new char</span>[strlen(t.str)+1];
+    strcpy(str, t.str);
+}</code></pre>
+
+        <p><strong>Three situations where copy constructor is called:</strong></p>
+        <ol>
+          <li>Explicitly copying an object: <code>Test b = a;</code></li>
+          <li>Passing an object by value to a function</li>
+          <li>Returning an object by value from a function</li>
+        </ol>
+
+        <h3>Assignment Operator (operator=)</h3>
+        <p>Called when assigning one existing object to another. Like the copy constructor, the default performs shallow (bitwise) copy — same dangling pointer risk.</p>
+
+        <h4>Rules for a safe operator=:</h4>
+        <ul>
+          <li><strong>Always return <code>*this</code></strong> to enable chaining: <code>a = b = c = d</code></li>
+          <li><strong>Check for self-assignment</strong> first: <code>if (this == &rhs) return *this;</code></li>
+          <li><strong>Assign all data members</strong> — including the base class: call <code>static_cast&lt;Base&amp;&gt;(*this) = rhs;</code></li>
+          <li><strong>Delete before allocating</strong> — free old memory before pointing to new memory</li>
+        </ul>
+        <pre><code><span class="ty">myString</span>& <span class="kw">operator</span>=(<span class="kw">const</span> <span class="ty">myString</span>& rhs) {
+    <span class="kw">if</span> (<span class="kw">this</span> == &rhs) <span class="kw">return</span> *<span class="kw">this</span>;  <span class="cm">// self-assignment guard</span>
+    <span class="kw">delete</span>[] data;                    <span class="cm">// free existing memory</span>
+    data = <span class="kw">new char</span>[strlen(rhs.data)+1];
+    strcpy(data, rhs.data);
+    <span class="kw">return</span> *<span class="kw">this</span>;
+}</code></pre>
+
+        <h3>Copy Elision & NRVO</h3>
+        <p>Compiler optimisations that eliminate redundant copy constructor and destructor calls. <strong>Named Return Value Optimisation (NRVO)</strong> avoids copying a locally constructed return value — the object is constructed directly in the caller's storage.</p>
+        <div class="callout">These optimisations make returning objects by value practical. Trust your compiler — don't pessimise by returning pointers just to "avoid copies".</div>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S5 — INIT LISTS & INLINE
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s5">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">📋</div>
+        <div class="sec-meta"><h2>Initialisation Lists & Inline Functions</h2><div class="sec-desc">Member init lists, ordering, inline vs macro</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Constructor Initialisation Lists</h3>
+        <div class="callout"><strong>Prefer initialisation over assignment in constructors.</strong> Initialisation is faster (one step), assignment is two steps (default-construct then assign). For const members and references it is mandatory — they cannot be assigned, only initialised.</div>
+
+        <pre><code><span class="cm">// ✓ Initialisation list — one step, always correct</span>
+<span class="fn">Example</span>(<span class="kw">int</span> i) : a(i), b(i) { }
+
+<span class="cm">// ✗ Assignment in body — two steps, fails for const/ref members</span>
+<span class="fn">Example</span>(<span class="kw">int</span> i) { a = i; b = i; }</code></pre>
+
+        <h4>Rules for Initialisation Lists</h4>
+        <ul>
+          <li>Members are initialised <strong>in the order they are declared in the class</strong> — not the order in the init list. Always write them in declaration order to avoid confusion.</li>
+          <li><code>const</code> and reference members <strong>must</strong> use init lists — they cannot be assigned</li>
+          <li><strong>Static data members</strong> are never initialised in the constructor — they are initialised once at their definition outside the class</li>
+          <li>All data members and base class constructors should appear explicitly in the init list</li>
+        </ul>
+
+        <h3>Inline Functions</h3>
+        <p>The <code>inline</code> keyword requests the compiler to insert the function's code at the call site instead of performing a real function call.</p>
+
+        <table class="cmp-table">
+          <tr><th>Aspect</th><th>Macro (#define)</th><th>Inline Function</th></tr>
+          <tr><td>Type checking</td><td>❌ None</td><td>✅ Full argument type checking</td></tr>
+          <tr><td>Conversions</td><td>❌ Not performed</td><td>✅ Performed correctly</td></tr>
+          <tr><td>Debugging</td><td>❌ Hard — expanded text</td><td>✅ Works with debugger like a normal function</td></tr>
+          <tr><td>Increment side effects</td><td>❌ <code>++i</code> may run twice</td><td>✅ Evaluated once, passed as value</td></tr>
+        </table>
+
+        <pre><code><span class="cm">// Macro — i incremented TWICE</span>
+<span class="kw">#define</span> myMacro(x) ((x>=0) ? x : -(x))
+val = myMacro(++i);  <span class="cm">// danger!</span>
+
+<span class="cm">// Inline — i incremented once, value passed correctly</span>
+<span class="kw">inline int</span> <span class="fn">myInline</span>(<span class="kw">int</span> x) { <span class="kw">return</span> (x>=0) ? x : -(x); }
+val = myInline(++i);  <span class="cm">// safe ✓</span></code></pre>
+
+        <h4>Key Points About Inline</h4>
+        <ul>
+          <li>The compiler is <strong>not obligated</strong> to honour the <code>inline</code> keyword — recursive or very long functions will not be inlined</li>
+          <li>Best practice: put <code>inline</code> on the <strong>definition</strong> only (outside the class body)</li>
+          <li>A member function defined <strong>inside the class body</strong> is implicitly inline</li>
+          <li>Virtual functions can only be inlined when called on an <strong>actual object</strong> (not through a pointer/reference) — the compiler must know the exact type</li>
+          <li><code>main()</code> must never be inlined</li>
+        </ul>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S6 — CONST CORRECTNESS
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s6">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🔒</div>
+        <div class="sec-meta"><h2>Const Correctness</h2><div class="sec-desc">Const pointers, const member functions, mutable, pass by const ref</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Pointer Const Declarations</h3>
+        <p>Draw a mental vertical line through the asterisk: <code>const</code> left of <code>*</code> = the pointed-to data is const. <code>const</code> right of <code>*</code> = the pointer itself is const.</p>
+
+        <table class="cmp-table">
+          <tr><th>Declaration</th><th>Pointer changeable?</th><th>Data changeable?</th></tr>
+          <tr><td><code>char* p</code></td><td>✅ Yes</td><td>✅ Yes</td></tr>
+          <tr><td><code>const char* p</code></td><td>✅ Yes</td><td>❌ No</td></tr>
+          <tr><td><code>char* const p</code></td><td>❌ No</td><td>✅ Yes</td></tr>
+          <tr><td><code>const char* const p</code></td><td>❌ No</td><td>❌ No</td></tr>
+        </table>
+
+        <h3>Const Member Functions</h3>
+        <p>A <code>const</code> member function (also called an <strong>inspector</strong>) guarantees it won't modify <code>*this</code>. A non-const member function (a <strong>mutator</strong>) may modify the object.</p>
+        <pre><code><span class="kw">class</span> <span class="ty">Fred</span> {
+<span class="kw">public</span>:
+    <span class="kw">void</span> <span class="fn">inspect</span>() <span class="kw">const</span>;  <span class="cm">// inspector — won't change *this</span>
+    <span class="kw">void</span> <span class="fn">mutate</span>();          <span class="cm">// mutator — may change *this</span>
+};
+
+<span class="ty">Fred</span> <span class="kw">const</span>* p = &f;
+p-><span class="fn">inspect</span>();  <span class="cm">// ✓ OK</span>
+p-><span class="fn">mutate</span>();   <span class="cm">// ✗ Error — p promises not to change *p</span></code></pre>
+
+        <h4>mutable Data Member</h4>
+        <p>A <code>mutable</code> member can be modified even inside a <code>const</code> member function. Use for logically-irrelevant state like caches or call counters.</p>
+        <pre><code><span class="kw">class</span> <span class="ty">Example</span> {
+    <span class="kw">mutable int</span> callCount;
+<span class="kw">public</span>:
+    <span class="kw">int</span> <span class="fn">getData</span>() <span class="kw">const</span> { ++callCount; <span class="kw">return</span> data; } <span class="cm">// OK — mutable</span>
+};</code></pre>
+
+        <h3>Pass by Const Reference</h3>
+        <div class="callout"><strong>Prefer pass-by-const-reference over pass-by-value</strong> for class types. Pass-by-value invokes the copy constructor (and all base class and member copy constructors) — potentially dozens of function calls for one argument. Pass-by-const-ref has zero overhead and also prevents the <strong>slicing problem</strong>.</div>
+
+        <p><strong>Slicing problem:</strong> When a derived class object is passed as a base class object by value, the derived-class-specific members are silently stripped away. Passing by reference avoids this — the virtual dispatch still works.</p>
+        <pre><code><span class="cm">// ✗ Slices derived features off</span>
+<span class="kw">void</span> <span class="fn">print</span>(<span class="ty">University</span> obj) { obj.<span class="fn">display</span>(); }
+
+<span class="cm">// ✓ Preserves polymorphism — correct virtual function is called</span>
+<span class="kw">void</span> <span class="fn">print</span>(<span class="kw">const</span> <span class="ty">University</span>& obj) { obj.<span class="fn">display</span>(); }</code></pre>
+
+        <h4>When NOT to Use Const</h4>
+        <ul>
+          <li>Do not declare <code>const</code> formal parameters that are passed by value — const is meaningless for the caller</li>
+          <li>Do not mark a function return type as <code>const</code> when returning by value — it prevents move optimisations</li>
+        </ul>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S7 — STATIC MEMBERS
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s7">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">📦</div>
+        <div class="sec-meta"><h2>Static Members</h2><div class="sec-desc">Static data, static functions, inheritance, SIOF</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>Static Data Members</h3>
+        <p>Associated with the <strong>class itself</strong>, not with individual objects. There is exactly <strong>one instance</strong> of a static data member regardless of how many objects of the class are created.</p>
+        <ul>
+          <li>Initialised <strong>outside the class</strong> at their definition — not in a constructor init list</li>
+          <li>Accessed via <code>ClassName::member</code>, or through any object/pointer of that type</li>
+          <li>Also known as <strong>class data</strong></li>
+        </ul>
+        <pre><code><span class="kw">class</span> <span class="ty">Counter</span> {
+<span class="kw">public</span>:
+    <span class="kw">static int</span> count;  <span class="cm">// declaration</span>
+    <span class="fn">Counter</span>() { count++; }
+};
+<span class="kw">int</span> <span class="ty">Counter</span>::count = 0;  <span class="cm">// definition + initialisation (outside class)</span></code></pre>
+
+        <h3>Static Member Functions</h3>
+        <p>Have <strong>no <code>this</code> pointer</strong> — they are not called on an object. Can only access other static members directly; to access non-static members, an object must be passed as a parameter.</p>
+        <ul>
+          <li>Also known as <strong>class services / class methods</strong></li>
+          <li>Cannot be <code>virtual</code>, <code>const</code>, or <code>volatile</code></li>
+          <li>Similar to a friend function — no implicit <code>this</code>, can access non-public members</li>
+        </ul>
+
+        <h3>Static & Inheritance</h3>
+        <p>If a base class defines a static member, there is <strong>one instance shared across all derived classes</strong>. Static members are not overridable — they are hidden (not overridden) in derived classes. A base class pointer to a derived object still calls the <strong>base class</strong> static function.</p>
+
+        <div class="note"><strong>Static Initialisation Order Fiasco (SIOF):</strong> The order of initialisation of static objects across different translation units is undefined. Never rely on one translation unit's static being ready for another's. Use local static or lazy initialisation patterns to avoid this.</div>
+
+        <h4>Analogy</h4>
+        <div class="callout">Static member functions are like services provided by the <strong>factory itself</strong>, not by the products it creates. The factory (class) exists and can offer its services even before any product (object) is instantiated.</div>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S8 — FRIENDS
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s8">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🤝</div>
+        <div class="sec-meta"><h2>Friend Classes & Functions</h2><div class="sec-desc">Friendship rules, operator overloading, virtual friend idiom</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>What is a Friend?</h3>
+        <p>A mechanism that grants a specific class or function access to the <strong>non-public members</strong> of the granting class. Friends are not members and are unaffected by access labels.</p>
+
+        <h4>Three Rules of Friendship</h4>
+        <ul>
+          <li><strong>Friendship is not transitive</strong> — a friend of a friend is not automatically a friend</li>
+          <li><strong>Friendship is not inherited</strong> — derived classes do not inherit the friendship of their base class</li>
+          <li><strong>Friendship is not virtual</strong> — friend functions do not bind dynamically (but the virtual friend function idiom provides this effect via a protected virtual helper)</li>
+        </ul>
+
+        <h3>Operator << and >> Overloading</h3>
+        <p>These are overloaded as non-member friend functions rather than member functions because <code>cout</code>/<code>cin</code> (the <code>ostream</code>/<code>istream</code> object) must be on the <strong>left side</strong> of the operator — which is impossible as a member function.</p>
+        <pre><code><span class="kw">class</span> <span class="ty">MyClass</span> {
+    <span class="kw">int</span> a;
+<span class="kw">public</span>:
+    <span class="kw">friend</span> std::ostream& <span class="kw">operator</span><<(std::ostream& os, <span class="kw">const</span> <span class="ty">MyClass</span>& rhs);
+    <span class="kw">friend</span> std::istream& <span class="kw">operator</span>>>(std::istream& is, <span class="ty">MyClass</span>& rhs);
+};
+
+std::ostream& <span class="kw">operator</span><<(std::ostream& os, <span class="kw">const</span> <span class="ty">MyClass</span>& rhs) {
+    <span class="kw">return</span> os << rhs.a;
+}</code></pre>
+
+        <h3>Virtual Friend Function Idiom</h3>
+        <p>Friend functions do not bind dynamically — but you can achieve the effect by having the friend call a <code>protected virtual</code> helper:</p>
+        <pre><code><span class="kw">class</span> <span class="ty">Shape</span> {
+<span class="kw">public</span>:
+    <span class="kw">friend</span> std::ostream& <span class="kw">operator</span><<(std::ostream& os, <span class="kw">const</span> <span class="ty">Shape</span>& s) {
+        s.<span class="fn">print</span>(os);  <span class="cm">// calls the right derived class print() via virtual dispatch</span>
+        <span class="kw">return</span> os;
+    }
+<span class="kw">protected</span>:
+    <span class="kw">virtual void</span> <span class="fn">print</span>(std::ostream&) <span class="kw">const</span> = 0;  <span class="cm">// pure virtual</span>
+};</code></pre>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S9 — VIRTUAL FUNCTIONS
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s9">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">⚡</div>
+        <div class="sec-meta"><h2>Virtual Functions & Inheritance</h2><div class="sec-desc">vtable, vptr, dynamic dispatch, abstract classes, derived classes</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <h3>How Virtual Functions Work — vtable & vptr</h3>
+        <p>When the compiler sees a <code>virtual</code> keyword, it builds a <strong>vtable</strong> (virtual function table) for that class — an array of function pointers, one per virtual function.</p>
+
+        <h4>Construction Steps</h4>
+        <ol>
+          <li><strong>vtable built per class</strong> — one table per class type, shared across all objects</li>
+          <li><strong>vptr added to each object</strong> — a hidden pointer inside every object pointing to its class's vtable</li>
+          <li><strong>Constructor initialises vptr</strong> — the constructor sets <code>vptr = &ClassName::vtable</code></li>
+        </ol>
+
+        <pre><code><span class="cm">// Derived vtable overlays base entries with overrides:</span>
+<span class="cm">// Base vtable:    [&Base::func, &Base::func1, &Base::func2, &Base::func3]</span>
+<span class="cm">// Derived vtable: [&Base::func, &Derived::func1, &Derived::func2, &Base::func3]</span>
+
+<span class="ty">Base</span>* bPtr = <span class="kw">new</span> <span class="ty">Derived</span>;
+bPtr-><span class="fn">func1</span>();  <span class="cm">// follows vptr → Derived vtable → calls Derived::func1 ✓</span></code></pre>
+
+        <h4>When Dynamic Binding Applies</h4>
+        <ul>
+          <li>Virtual functions called through a <strong>pointer or reference</strong> to a base class → resolved at <strong>runtime</strong></li>
+          <li>Non-virtual functions → resolved at <strong>compile time</strong> based on the static type</li>
+          <li>Virtual functions called on an <strong>actual object</strong> (not pointer/ref) → can be inlined by the compiler</li>
+        </ul>
+
+        <h3>Important Rules</h3>
+        <ul>
+          <li>Any non-static member function other than constructors may be virtual</li>
+          <li>Static member functions <strong>cannot be virtual</strong></li>
+          <li>Constructors <strong>cannot be virtual</strong> — the object doesn't fully exist when the constructor runs</li>
+          <li><strong>Don't call virtual functions in constructors or destructors</strong> — the object is incomplete and the derived override won't be invoked</li>
+        </ul>
+
+        <div class="warn"><strong>Virtual constructors don't exist</strong> — object creation and type are tightly coupled in C++. Use the <strong>Factory Method</strong> pattern to decouple object creation from type selection at runtime.</div>
+
+        <h3>Abstract Classes & Pure Virtual Functions</h3>
+        <p>A class containing at least one <strong>pure virtual function</strong> is an abstract class.</p>
+        <pre><code><span class="kw">class</span> <span class="ty">Shape</span> {
+<span class="kw">public</span>:
+    <span class="kw">virtual void</span> <span class="fn">draw</span>() = 0;  <span class="cm">// pure virtual — must be overridden</span>
+    <span class="kw">virtual</span> ~<span class="fn">Shape</span>() {}        <span class="cm">// virtual destructor</span>
+};</code></pre>
+        <ul>
+          <li>Cannot be instantiated — only used as a base</li>
+          <li>Derived classes must implement all pure virtual functions or they become abstract too</li>
+          <li>Can have non-abstract members alongside pure virtual ones</li>
+        </ul>
+
+        <h3>Inheritance Access Levels</h3>
+        <table class="cmp-table">
+          <tr><th>Inheritance type</th><th>Base public becomes</th><th>Base protected becomes</th></tr>
+          <tr><td><code>public</code></td><td>public in derived</td><td>protected in derived</td></tr>
+          <tr><td><code>protected</code></td><td>protected in derived</td><td>protected in derived</td></tr>
+          <tr><td><code>private</code></td><td>private in derived</td><td>private in derived</td></tr>
+        </table>
+        <div class="note"><strong>Default inheritance:</strong> <code>class</code> keyword defaults to <strong>private</strong>; <code>struct</code> keyword defaults to <strong>public</strong>.</div>
+
+      </div></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         S10 — INTERVIEW Q&A
+    ════════════════════════════════════ -->
+    <div class="section-card" id="s10">
+      <div class="sec-header" onclick="toggle(this)">
+        <div class="sec-icon">🎯</div>
+        <div class="sec-meta"><h2>Interview Questions & Answers</h2><div class="sec-desc">References · OOP · Memory · Constructors · Virtual · Const · Static</div></div>
+        <div class="toggle-btn">+</div>
+      </div>
+      <div class="sec-body"><div class="sec-inner">
+
+        <div class="callout">Click any question to expand the answer.</div>
+
+        <h3>References & Pointers</h3>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is a reference and how does it differ from a pointer?</div>
+          <div class="qa-a"><div class="qa-a-inner">A reference is an alias for an existing object — it doesn't create a new object or copy. It must be initialised at declaration and cannot be rebound to a different object. A pointer is an independent object that stores a memory address and can be changed to point elsewhere or set to null. Prefer references when the target is guaranteed to exist and won't change.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Can a reference be made to refer to a different object after initialisation?</div>
+          <div class="qa-a"><div class="qa-a-inner">No. Once a reference is bound to a referent, it is bound permanently. Any assignment to the reference changes the <em>value of the referent</em>, not the binding. This is a fundamental difference from pointers.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Does <code>int& const x</code> make sense?</div>
+          <div class="qa-a"><div class="qa-a-inner">No. A reference is implicitly const-bound — it cannot be reseated. Adding <code>const</code> to the reference itself adds no meaning and is an error. <code>const int& x</code> (const applied to what is referenced) is meaningful and common.</div></div>
+        </div>
+
+        <h3>OOP & Classes</h3>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is the size of an empty class in C++?</div>
+          <div class="qa-a"><div class="qa-a-inner">1 byte — not zero. The C++ standard says no two distinct objects may share the same memory address. To guarantee unique addresses, the compiler inserts a dummy byte into any class with no data members and no virtual functions.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is the difference between <code>struct</code> and <code>class</code> in C++?</div>
+          <div class="qa-a"><div class="qa-a-inner">The only technical difference is the default access level. In a <code>struct</code>, members before the first access label are <code>public</code>. In a <code>class</code>, they are <code>private</code>. Default inheritance is also public for <code>struct</code> and private for <code>class</code>.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is the difference between abstract function and virtual function?</div>
+          <div class="qa-a"><div class="qa-a-inner">A <strong>virtual function</strong> has a body — it provides a default implementation that derived classes may optionally override. A <strong>pure virtual (abstract) function</strong> has no body (declared with <code>= 0</code>) and <em>must</em> be overridden in every concrete derived class. You cannot call <code>base.Method()</code> on an abstract function since there is no base implementation.</div></div>
+        </div>
+
+        <h3>Constructors & Destructors</h3>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Why should the base class destructor be virtual?</div>
+          <div class="qa-a"><div class="qa-a-inner">When you delete a derived object through a base class pointer, the compiler decides which destructor to call based on the pointer type. Without <code>virtual</code>, only the base destructor runs — the derived destructor is skipped, leaking resources. With <code>virtual</code>, dynamic dispatch ensures the derived destructor runs first, then the base destructor.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">When is a copy constructor invoked?</div>
+          <div class="qa-a"><div class="qa-a-inner">Three situations: (1) when an object is explicitly copied <code>Test b = a;</code>, (2) when an object is passed by value as a function argument, (3) when an object is returned by value from a function. The compiler generates a default shallow (bitwise) copy constructor — write your own for classes with raw pointer members.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Should one constructor call another constructor as a primitive?</div>
+          <div class="qa-a"><div class="qa-a-inner">No. Even though C++ allows it syntactically (before C++11 delegating constructors), calling a constructor inside another constructor creates a <em>temporary object</em>, not <code>this</code>. That temporary is initialised and then immediately destroyed, leaving the original object's members uninitialised. Better approaches: use default parameter values or a shared private <code>init()</code> helper method.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Why shouldn't you call virtual functions in a constructor or destructor?</div>
+          <div class="qa-a"><div class="qa-a-inner">During base class construction, the object's type is the base class type — the derived part hasn't been built yet. Calling a virtual function would invoke the base version, not the derived override. The same applies in reverse during destruction: the derived part is already destroyed when the base destructor runs, so calling virtual functions there would reach a destroyed derived object.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Why are initialisation lists preferred over assignment in constructors?</div>
+          <div class="qa-a"><div class="qa-a-inner">Initialisation is a single step — the member is constructed with the given value directly. Assignment is two steps — the member is first default-constructed (often expensively), then assigned a new value. Additionally, <code>const</code> and reference members can only be initialised, never assigned, so init lists are mandatory for them.</div></div>
+        </div>
+
+        <h3>Const & Static</h3>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is the difference between <code>Fred const* p</code>, <code>Fred* const p</code>, and <code>Fred const* const p</code>?</div>
+          <div class="qa-a"><div class="qa-a-inner"><code>Fred const* p</code> — pointer is changeable, but it cannot be used to change the Fred object. <code>Fred* const p</code> — pointer is constant (cannot point elsewhere) but the Fred object can be modified through it. <code>Fred const* const p</code> — both the pointer and the Fred object are constant.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">How is a static member function similar to a friend function?</div>
+          <div class="qa-a"><div class="qa-a-inner">Both have no implicit <code>this</code> pointer parameter, and both can access the non-public members of the class. The key difference: a friend is an external function granted access, while a static member is part of the class itself and follows the class's access rules.</div></div>
+        </div>
+
+        <h3>Virtual Functions & Polymorphism</h3>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">How does dynamic dispatch work internally (vtable)?</div>
+          <div class="qa-a"><div class="qa-a-inner">The compiler creates a vtable (array of function pointers) for each class with virtual functions. Each object gets a hidden vptr pointing to its class's vtable. The constructor sets the vptr. When a virtual function is called through a pointer/reference, the runtime follows the vptr to the vtable and calls the correct function pointer — hence "runtime dispatch".</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Can a static member function be virtual?</div>
+          <div class="qa-a"><div class="qa-a-inner">No. Static member functions have no <code>this</code> pointer, so they cannot participate in virtual dispatch (which requires an object's vptr). The compiler will reject <code>virtual static void func()</code>.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">What is the slicing problem and how do you prevent it?</div>
+          <div class="qa-a"><div class="qa-a-inner">When a derived class object is passed by value as a base class object, the derived-class-specific members are silently stripped away — "sliced off". The result is a pure base class object. Prevention: always pass class objects by reference (<code>const Base& obj</code>), not by value. This preserves the full object and virtual dispatch works correctly.</div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">Why is passing by reference more efficient than passing by value for class objects?</div>
+          <div class="qa-a"><div class="qa-a-inner">Pass-by-value invokes the copy constructor of the object and all its member and base class copy constructors and destructors. For a class with inherited members and string fields, a single argument can trigger 6+ constructor and 6+ destructor calls. Pass-by-const-reference has zero copy overhead — just one pointer-sized value passed to the function.</div></div>
+        </div>
+
+      </div></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="page-footer">Rathinasamy Arulappan · Learnings · C++ Study Notes</div>
+
+<script>
+  function toggle(header) {
+    header.closest('.section-card').classList.toggle('open');
+    syncToc();
+  }
+  function jumpTo(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.classList.contains('open')) el.classList.add('open');
+    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    syncToc(id);
+  }
+  function syncToc(activeId) {
+    const map = { s1:0,s2:1,s3:2,s4:3,s5:4,s6:5,s7:6,s8:7,s9:8,s10:9 };
+    document.querySelectorAll('.toc-item').forEach(t => t.classList.remove('active'));
+    if (activeId && map[activeId] !== undefined)
+      document.querySelectorAll('.toc-item')[map[activeId]].classList.add('active');
+  }
+  function toggleQA(qEl) {
+    qEl.closest('.qa-item').classList.toggle('open');
+  }
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) syncToc(e.target.id); });
+  }, { threshold: 0.2 });
+  ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+</script>
+</body>
+</html>

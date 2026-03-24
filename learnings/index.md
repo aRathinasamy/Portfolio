@@ -4,6 +4,18 @@
 
 ---
 
+## 💻 C++ — Study Notes
+
+**C++ · OOP · Memory · Virtual Functions · Const Correctness**
+
+A structured study guide covering C++ fundamentals in depth — references vs pointers, OOP concepts, classes and copy control, constructor initialisation lists, const correctness, static members, friend functions, and virtual function internals (vtable/vptr). Includes an interview Q&A section.
+
+Topics covered: References, Pointers, C vs C++, Encapsulation, Abstraction, Polymorphism, Inheritance, Constructors, Copy Constructor, operator=, Inline Functions, Const Correctness, Static Members, Friend Classes, Virtual Functions, Abstract Classes.
+
+[→ Open C++ Study Notes](./cpp/index.html)
+
+---
+
 ## 🎮 Unity 3D — Study Notes
 
 **C# · Animation · UI · OOP · Scripting · June 2017**
